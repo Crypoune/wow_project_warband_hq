@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Warband HgQ"
+    app_name: str = "Warband HQ"
     environment: str = "development"
     database_url: str
 
