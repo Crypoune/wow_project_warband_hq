@@ -1,4 +1,4 @@
-# Warband HQ — Product Backlog
+# Warband HQ - Product Backlog
 
 ## Product Backlog V1
 
@@ -6,10 +6,10 @@ The Product Backlog contains all User Stories identified for the Warband HQ proj
 
 User Stories are prioritized using the MoSCoW method:
 
-- **Must Have** — Essential functionality required for the MVP to operate.
-- **Should Have** — Important functionality that improves the MVP but is not essential.
-- **Could Have** — Useful functionality that may be implemented if time and resources allow.
-- **Won't Have** — Functionality intentionally excluded from the current MVP.
+- **Must Have** - Essential functionality required for the MVP to operate.
+- **Should Have** - Important functionality that improves the MVP but is not essential.
+- **Could Have** - Useful functionality that may be implemented if time and resources allow.
+- **Won't Have** - Functionality intentionally excluded from the current MVP.
 
 The backlog will be progressively refined during development. Technical tasks will be defined when the corresponding User Stories are selected for a sprint.
 
@@ -19,7 +19,7 @@ The backlog will be progressively refined during development. Technical tasks wi
 
 | ID    | User Story                                                                                                                                 | Priority  | Dependency   | Status  |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------------ | ------- |
-| US-01 | As a World of Warcraft player, I want to log in with my Blizzard account so that I can access my character information.                    | Must Have | —            | Backlog |
+| US-01 | As a World of Warcraft player, I want to log in with my Blizzard account so that I can access my character information.                    | Must Have | /            | Backlog |
 | US-02 | As a logged-in player, I want to retrieve my World of Warcraft characters so that I can see the characters available on my account.        | Must Have | US-01        | Backlog |
 | US-03 | As a player, I want to view my characters in a centralized interface so that I can quickly get an overview of my characters.               | Must Have | US-02        | Backlog |
 | US-04 | As a player, I want to view the main information about a character so that I can better understand its current status and progression.     | Must Have | US-03        | Backlog |
@@ -58,7 +58,7 @@ The backlog will be progressively refined during development. Technical tasks wi
 
 | ID    | User Story                                                                                                                                                   | Priority   | Dependency | Status       |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ---------- | ------------ |
-| US-19 | As a player, I want to be able to view my character information even when the Blizzard API is unavailable so that I can access the latest synchronized data. | Won't Have | —          | Out of Scope |
+| US-19 | As a player, I want to be able to view my character information even when the Blizzard API is unavailable so that I can access the latest synchronized data. | Won't Have | /          | Out of Scope |
 
 ---
 
