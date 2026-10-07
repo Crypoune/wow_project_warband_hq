@@ -1,313 +1,304 @@
-# Warband HQ - Sprint Plan
+# Warband HQ — Sprint Plan
 
-## 1. Sprint Planning
+## 1. Sprint Planning Overview
 
-The Warband HQ development is divided into short iterations in order to progressively build and validate the MVP.
+The development of Warband HQ is divided into short and manageable sprints.
 
-The sprint organization is based on:
+The objective is to progressively implement the MVP while keeping each sprint focused on a clearly defined scope.
 
-- User Story priorities defined using the MoSCoW method.
-- Dependencies between features.
-- The technical architecture of the application.
-- Progressive integration between the backend, Blizzard APIs, database and frontend.
-- Testing and validation of each major feature before moving to the next stage.
+The database structure will be developed progressively throughout the relevant sprints rather than being fully implemented at the beginning of the project.
 
-Warband HQ is developed individually by myself. Therefore, all development, project management, UI/UX, documentation and testing responsibilities are assigned to me.
+| Sprint   | Focus                                         | Duration | Main Objective                                                       |
+| -------- | --------------------------------------------- | -------: | -------------------------------------------------------------------- |
+| Sprint 0 | Project Planning & Development Foundation     | 3–4 days | Define the backlog, priorities, dependencies and sprint organization |
+| Sprint 1 | Backend Foundation                            | 5–7 days | Establish the backend technical foundation and database connectivity |
+| Sprint 2 | Blizzard Authentication & Character Retrieval | 4–5 days | Implement Blizzard authentication and retrieve available characters  |
+| Sprint 3 | Character Overview & Organization             | 4–5 days | Display and organize imported characters                             |
+| Sprint 4 | Character Details & Progression               | 3–4 days | Implement detailed character information and progression data        |
+| Sprint 5 | Goals, Tasks & Character Notes                | 3–4 days | Implement personal organization features                             |
+| Sprint 6 | MVP Integration, Testing & Finalization       |   3 days | Integrate, test and finalize the MVP                                 |
 
----
+The MVP development period is planned during October 2026.
 
-## 2. Sprint Overview
-
-| Sprint   | Duration | Main Objective                                  | Priority  | Status  |
-| -------- | -------- | ----------------------------------------------- | --------- | ------- |
-| Sprint 0 | 3-4 days | Project planning and development foundation     | Must Have | Planned |
-| Sprint 1 | 5-7 days | Backend foundation                              | Must Have | Planned |
-| Sprint 2 | 4-5 days | Blizzard authentication and character retrieval | Must Have | Planned |
-| Sprint 3 | 4-5 days | Character overview and organization             | Must Have | Planned |
-| Sprint 4 | 3-4 days | Character details and progression               | Must Have | Planned |
-| Sprint 5 | 3-4 days | Goals, tasks and character notes                | Must Have | Planned |
-| Sprint 6 | 3 days   | MVP integration, testing and finalization       | Must Have | Planned |
+Sprint durations are estimates and may be adjusted according to development progress, technical difficulties and validation results.
 
 ---
 
-### Sprint Duration
-
-The MVP development is planned across the month of October 2026.
-
-Sprints are intentionally kept short, with a duration of approximately 3 to 7 days depending on the scope and dependencies of each iteration.
-
-The exact dates may be adjusted during development according to progress, blockers and validation results.
-
----
-
-## 3. Sprint 0 - Planning and Foundation
+## 2. Sprint 0 — Project Planning & Development Foundation
 
 ### Objective
 
-Prepare the project structure, requirements and development plan before implementing the main MVP features.
+Establish the project foundation before beginning feature development.
 
-### Main Activities
+### Activities
 
-- Define and validate the Product Backlog.
-- Define the Sprint Plan.
-- Review the Technical Documentation.
-- Confirm the MVP scope.
-- Confirm technical architecture and development environment.
+- Define the Product Backlog.
+- Document the User Stories.
+- Apply MoSCoW prioritization.
+- Define MVP scope.
 - Identify dependencies between User Stories.
-
-### Deliverables
-
-- Product Backlog
-- Sprint Plan
-- Validated MVP scope
-- Development environment ready
-
-### User Stories
-
-No User Story is implemented during this sprint.
+- Define sprint organization.
+- Define sprint durations.
+- Define responsibilities.
+- Establish the development workflow.
+- Review the technical documentation before development.
 
 ### Dependencies
 
-This sprint provides the planning foundation for all subsequent sprints.
+None.
+
+### Status
+
+Completed.
 
 ---
 
-## 4. Sprint 1 - Backend Foundation
+## 3. Sprint 1 — Backend Foundation
 
 ### Objective
 
-Establish the backend foundation required for authentication, Blizzard API integration and application data management.
+Establish the technical foundation required to develop the Warband HQ backend.
 
-### Main Activities
+### Activities
 
-- Set up the backend application.
-- Configure the application environment.
-- Configure PostgreSQL.
-- Establish the backend project structure.
-- Prepare database models required by the application.
-- Prepare the Blizzard API integration layer.
-- Establish the basic API structure.
-- Prepare error handling.
+- Configure the Python development environment.
+- Configure FastAPI and Uvicorn.
+- Configure the backend dependencies.
+- Set up PostgreSQL for the development environment.
+- Create the Warband HQ database.
+- Create the dedicated application database user.
+- Document the initial PostgreSQL setup.
+- Configure environment variables.
+- Configure application settings with Pydantic Settings.
+- Configure SQLAlchemy and the PostgreSQL driver.
+- Establish the backend-to-database connection.
+- Implement the first `/health` endpoint.
+- Make the health endpoint verify the database connection.
+- Implement global API error handling.
+- Set up automated backend testing.
+- Add initial tests for the backend health and database connectivity.
+
+### Database Scope
+
+The database is intentionally not fully implemented during this sprint.
+
+Only the infrastructure required for the backend to connect to PostgreSQL is established.
+
+Application data models and database tables will be introduced progressively during the sprints that require them.
 
 ### User Stories
 
 Technical preparation for:
 
-- US-01 - Blizzard Authentication
-- US-02 - Character Retrieval
-- US-05 - Error Handling
+- US-01 — Blizzard Authentication
+- US-02 — Character Retrieval
+- US-05 — Error Handling
 
 ### Dependencies
 
-Sprint 0.
+- Sprint 0 completed.
+- PostgreSQL development environment available.
+
+### Deliverable
+
+A functional FastAPI backend capable of connecting to PostgreSQL, with a working health endpoint, basic error handling and automated tests.
 
 ---
 
-## 5. Sprint 2 - Blizzard Authentication and Character Retrieval
+## 4. Sprint 2 — Blizzard Authentication & Character Retrieval
 
 ### Objective
 
-Allow a player to authenticate with Blizzard and retrieve the characters available on their World of Warcraft account.
+Implement Blizzard authentication and retrieve the World of Warcraft characters available to the authenticated user.
 
-### Main Activities
+### Activities
 
 - Implement Blizzard OAuth authentication.
-- Handle the OAuth callback.
-- Manage the authenticated session.
+- Implement the authentication callback.
+- Manage the authentication session.
+- Implement logout.
+- Configure the Blizzard API client.
 - Connect the backend to the Blizzard Profile APIs.
-- Retrieve the player's World of Warcraft account information.
-- Retrieve available characters.
-- Adapt Blizzard API responses for the application.
-- Implement character retrieval errors.
-- Test the authentication and character retrieval flow.
+- Retrieve the user's WoW account profile.
+- Retrieve available WoW characters.
+- Implement the required database structures for authenticated users and imported characters.
+- Implement character import.
+- Implement error handling for authentication and character retrieval.
+- Add automated tests for authentication and character retrieval.
 
 ### User Stories
 
-- US-01 - Blizzard Authentication
-- US-02 - Character Retrieval
-- US-05 - Error Handling
+- US-01 — Blizzard Authentication
+- US-02 — Character Retrieval
+- US-05 — Error Handling
 
 ### Dependencies
 
-- Sprint 1
-- US-01 before US-02
+- Sprint 1 completed.
+
+### Deliverable
+
+A user can authenticate with Blizzard and retrieve the available World of Warcraft characters.
 
 ---
 
-## 6. Sprint 3 - Character Overview and Organization
+## 5. Sprint 3 — Character Overview & Organization
 
 ### Objective
 
-Provide the player with a centralized view of their characters and basic organization features.
+Provide a centralized interface for viewing and organizing imported characters.
 
-### Main Activities
+### Activities
 
-- Implement the Character Overview interface.
-- Display character cards.
-- Display main character information.
+- Implement the Character Overview page.
+- Display the main character information.
+- Retrieve imported characters from the backend.
 - Implement character filtering.
 - Implement character sorting.
 - Implement character favorites.
 - Implement character tags.
+- Add the required database structures for favorites and tags.
+- Implement the corresponding backend services and endpoints.
+- Add automated tests for character organization features.
 
 ### User Stories
 
-- US-03 - Character Overview
-- US-04 - Main Character Information
-- US-07 - Character Filtering and Sorting
-- US-08 - Character Favorites
-- US-09 - Character Tags
+- US-03 — Character Overview
+- US-07 — Character Filtering and Sorting
+- US-08 — Character Favorites
+- US-09 — Character Tags
 
 ### Dependencies
 
-- Sprint 2
-- US-02 before US-03
-- US-03 before organization features
+- Sprint 2 completed.
+
+### Deliverable
+
+A centralized character overview allowing users to find and organize their characters.
 
 ---
 
-## 7. Sprint 4 - Character Details and Progression
+## 6. Sprint 4 — Character Details & Progression
 
 ### Objective
 
-Allow the player to select a character and access more detailed information about its progression.
+Implement the detailed character view and selected progression information.
 
-### Main Activities
+### Activities
 
-- Implement the Character Details interface.
-- Retrieve detailed character information.
+- Implement the Character Details page.
+- Retrieve detailed character information from Blizzard.
 - Retrieve character media.
 - Retrieve equipment information.
-- Retrieve achievement progression.
-- Retrieve profession information.
-- Display detailed character progression.
+- Retrieve selected progression information.
+- Process and combine Blizzard API data.
+- Display the information through the frontend.
 - Implement character synchronization.
-- Test the detailed character flow.
+- Add the required database structures for character synchronization metadata.
+- Implement error handling for unavailable character information.
+- Add automated tests for character details and progression.
 
 ### User Stories
 
-- US-06 - Detailed Character View
+- US-04 — Main Character Information
+- US-06 — Detailed Character View
+- US-13 — Activity Tracking
+- US-14 — Advanced Statistics
+- US-15 — Clear Information Presentation
 
 ### Dependencies
 
-- Sprint 3
-- US-03 and US-04
+- Sprint 3 completed.
+- Blizzard character retrieval implemented.
+
+### Deliverable
+
+A functional detailed character view containing the selected progression information available through the Blizzard APIs.
 
 ---
 
-## 8. Sprint 5 - Goals, Tasks and Character Notes
+## 7. Sprint 5 — Goals, Tasks & Character Notes
 
 ### Objective
 
-Add the personal organization features included in the MVP.
+Implement the personal organization features of Warband HQ.
 
-### Main Activities
+### Activities
 
 - Implement personal goals.
-- Implement task management.
-- Associate tasks with goals.
-- Track task completion.
+- Implement tasks associated with goals.
 - Implement private character notes.
-- Validate access to user-owned data.
+- Create the required database structures progressively.
+- Implement the corresponding backend services and endpoints.
+- Implement frontend interfaces for managing goals, tasks and notes.
+- Add validation and error handling.
+- Add automated tests for these features.
 
 ### User Stories
 
-- US-10 - Personal Goals
-- US-11 - Tasks
-- US-12 - Character Notes
+- US-10 — Personal Goals
+- US-11 — Tasks
+- US-12 — Character Notes
 
 ### Dependencies
 
-- Sprint 3
-- US-10 before US-11
+- Sprint 3 completed.
+- Character management available.
+
+### Deliverable
+
+Users can create and manage personal goals, tasks and private character notes.
 
 ---
 
-## 9. Sprint 6 - MVP Integration, Testing and Finalization
+## 8. Sprint 6 — MVP Integration, Testing & Finalization
 
 ### Objective
 
-Integrate the complete MVP and validate that the implemented features satisfy the project requirements.
+Integrate the implemented features and validate the complete MVP.
 
-### Main Activities
+### Activities
 
-- Integrate frontend and backend features.
-- Perform end-to-end testing.
-- Test authentication.
-- Test character retrieval.
-- Test character overview.
-- Test character details.
-- Test filtering and sorting.
-- Test favorites and tags.
-- Test goals and tasks.
-- Test character notes.
-- Test error handling.
+- Integrate all implemented backend features.
+- Integrate the frontend with the backend.
+- Verify the complete authentication flow.
+- Verify character retrieval and display.
+- Verify character details and progression.
+- Verify organization features.
+- Verify goals, tasks and notes.
+- Run automated tests.
+- Perform API testing.
+- Perform integration testing.
+- Perform end-to-end testing of the main user flows.
 - Fix identified bugs.
 - Review MVP requirements.
-- Update project documentation.
-- Prepare the final project presentation.
+- Verify that the implemented features match the Product Backlog and technical documentation.
+- Prepare the final MVP.
 
 ### User Stories
 
-Validation of:
-
-- US-01 to US-12
+Validation of all implemented MVP User Stories.
 
 ### Dependencies
 
-All previous sprints.
+- Sprints 1–5 completed.
+
+### Deliverable
+
+A tested and functional Warband HQ MVP.
 
 ---
 
-## 10. Future Backlog
+## 9. Responsibilities
 
-The following User Stories are not part of the initial Must Have implementation scope.
+Since Warband HQ is developed individually, all project roles are assumed by the same developer.
 
-### Should Have
+| Role                  | Responsibility                                                     |
+| --------------------- | ------------------------------------------------------------------ |
+| Project Manager       | Sprint planning, prioritization, deadlines and progress tracking   |
+| Full Stack Developer  | Frontend, backend, database and API development                    |
+| UI/UX Designer        | Interface design and user experience                               |
+| Documentation Manager | Technical documentation and project records                        |
+| QA / Tester           | Automated tests, manual testing, bug identification and validation |
 
-- US-13 - Activity Tracking
-- US-14 - Advanced Statistics
-- US-15 - Clear Information Presentation
-
-### Could Have
-
-- US-16 - Custom Collections
-- US-17 - Public Sharing
-- US-18 - Character Comparison
-
-### Won't Have
-
-- US-19 - Data Persistence
-
-These features may be considered for future iterations depending on the available development time and project scope.
-
----
-
-## 11. Responsibilities
-
-Because Warband HQ is an individual project, all sprint responsibilities are assigned to Arnaud Messenet.
-
-| Responsibility           | Assigned To     |
-| ------------------------ | --------------- |
-| Project Management       | Arnaud Messenet |
-| Backend Development      | Arnaud Messenet |
-| Frontend Development     | Arnaud Messenet |
-| Blizzard API Integration | Arnaud Messenet |
-| Database Development     | Arnaud Messenet |
-| UI/UX Design             | Arnaud Messenet |
-| Testing / QA             | Arnaud Messenet |
-| Documentation            | Arnaud Messenet |
-
----
-
-## 12. Sprint Status
-
-Sprint status will be updated during development.
-
-Possible statuses:
-
-- Planned
-- In Progress
-- Testing
-- Completed
-- Blocked
+The project documentation confirms that the project is developed individually and that these complementary roles are assumed by the same developer.
