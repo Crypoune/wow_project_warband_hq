@@ -7,6 +7,7 @@ from alembic import context
 from app.core.config import settings
 from app.core.database import Base
 from app.models.user import User
+from app.models.character import Character
 from app.models.authentication_session import AuthenticationSession
 
 # this is the Alembic Config object, which provides

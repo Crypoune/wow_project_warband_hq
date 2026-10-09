@@ -9,16 +9,26 @@ The project aims to provide a clear overview of a player's WoW account and its c
 ### Authentication — US-01
 
 - Authentication through Blizzard OAuth 2.0.
-- Secure server-side session management.
+- Server-side session management.
 - Retrieval of the authenticated Blizzard account profile.
 - Logout functionality.
 - Integration between the React frontend and the FastAPI backend.
 
-### Planned features
+### Character Retrieval — US-02
 
 - Retrieve characters associated with the authenticated Blizzard account.
-- Display character information and progression.
-- Expand character tracking features progressively.
+- Display available characters in the web interface.
+- Select characters for import into Warband HQ.
+- Store imported characters in PostgreSQL.
+- Prevent duplicate character imports for the same user.
+- Retrieve the characters already imported by the authenticated user.
+- Preserve the association between users and their imported characters.
+
+### Planned Features
+
+- Character overview and progression tracking.
+- Character details and synchronization with Blizzard.
+- Additional character tracking features as the project evolves.
 
 ## Tech Stack
 
@@ -41,11 +51,13 @@ The project aims to provide a clear overview of a player's WoW account and its c
 
 - Blizzard Battle.net API
 - OAuth 2.0 authentication
+- WoW Account Profile API
 
 ### Testing
 
 - pytest
 - Automated backend tests
+- API endpoint and service tests
 
 ## Project Structure
 
@@ -53,6 +65,7 @@ The project aims to provide a clear overview of a player's WoW account and its c
 wow_project_warband_hq/
 ├── backend/
 │   ├── alembic/
+│   │   └── versions/
 │   ├── app/
 │   │   ├── api/
 │   │   ├── core/
@@ -65,6 +78,7 @@ wow_project_warband_hq/
 │   └── database/
 │       └── setup.sql
 └── frontend/
+    └── src/
 ```
 
 ## Local Development
@@ -101,15 +115,20 @@ pip install -r requirements.txt
 
 Configure the environment variables using `backend/.env.example` as a reference. Set your PostgreSQL connection details, Blizzard OAuth credentials, redirect URI, and session secret.
 
+Apply database migrations:
+
+```bash
+alembic upgrade head
+```
+
 Start the backend:
 
 ```bash
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Backend URL: http://127.0.0.1:8000/
-
-API documentation: http://127.0.0.1:8000/docs
+- Backend URL: http://127.0.0.1:8000/
+- API documentation: http://127.0.0.1:8000/docs
 
 ### Frontend Setup
 
@@ -125,13 +144,13 @@ Frontend URL: http://127.0.0.1:5173/
 
 ## Authentication Configuration
 
-For local development, the Blizzard OAuth redirect URI is:
+For local development, configure the Blizzard OAuth redirect URI as follows:
 
 ```text
 http://127.0.0.1:8000/api/auth/callback
 ```
 
-The authentication flow uses the following endpoints:
+The authentication flow uses these endpoints:
 
 | Method | Endpoint             | Description                              |
 | ------ | -------------------- | ---------------------------------------- |
@@ -142,7 +161,45 @@ The authentication flow uses the following endpoints:
 
 The backend manages authentication sessions, while the frontend communicates with the API using credentials to maintain the session.
 
-**Important:** The local URLs above are intended for development. Production deployment requires appropriate HTTPS, cookie, CORS, and environment configuration.
+## Character API
+
+The character retrieval and import workflow uses the following endpoints:
+
+| Method | Endpoint                    | Description                                                            |
+| ------ | --------------------------- | ---------------------------------------------------------------------- |
+| GET    | `/api/characters/available` | Retrieves characters available from the authenticated Blizzard account |
+| POST   | `/api/characters/import`    | Imports selected characters into Warband HQ                            |
+| GET    | `/api/characters`           | Retrieves characters imported by the authenticated user                |
+
+The import endpoint accepts a JSON payload containing the selected Blizzard character IDs:
+
+```json
+{
+  "character_ids": [123456, 789012]
+}
+```
+
+Character IDs in this example are illustrative.
+
+The backend verifies that the requested characters belong to the authenticated Blizzard account before importing them. Duplicate imports for the same user are skipped.
+
+Imported character records are stored in PostgreSQL and associated with the authenticated application user.
+
+## Database Migrations
+
+Warband HQ uses Alembic to manage database schema changes.
+
+After configuring the database connection, apply all migrations with:
+
+```bash
+alembic upgrade head
+```
+
+To check the current migration revision:
+
+```bash
+alembic current
+```
 
 ## Running Tests
 
@@ -152,12 +209,15 @@ From the backend directory, with the virtual environment activated:
 python -m pytest -v
 ```
 
+The automated backend test suite covers authentication, health checks, character retrieval, character imports, and relevant error cases.
+
 ## Project Status
 
-The project is being developed incrementally using Agile sprints and user stories.
+Warband HQ is being developed incrementally using Agile sprints and user stories.
 
-- **US-01 — Blizzard Authentication:** implementation and integration completed; final automated test verification pending.
-- **US-02 — Character Retrieval:** planned next step.
+- **US-01 — Blizzard Authentication:** implementation and frontend integration completed; automated tests passed.
+- **US-02 — Character Retrieval:** backend endpoints, database model and migration, frontend character selection, and import workflow implemented; local functional verification completed.
+- **US-03 — Character Overview:** planned.
 
 ## License
 

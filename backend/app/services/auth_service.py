@@ -84,4 +84,41 @@ class AuthService:
         )
 
         response.raise_for_status()
-        return response.json()
+        profile = response.json()
+
+        return profile
+
+
+    def get_account_characters(self, access_token: str) -> list[dict]:
+        """Récupère les personnages de tous les comptes WoW."""
+
+        profile = self.get_account_profile(access_token)
+        characters = []
+
+        # Parcourt les comptes WoW associés au compte Blizzard.
+        for account in profile.get("wow_accounts", []):
+            # Parcourt les personnages de chaque compte WoW.
+            for entry in account.get("characters", []):
+                character = entry.get("character", {})
+                realm = entry.get("realm", {})
+                playable_class = entry.get("playable_class", {})
+                playable_race = entry.get("playable_race", {})
+                faction = entry.get("faction", {})
+
+                characters.append(
+                    {
+                        "id": entry.get("id"),
+                        "name": entry.get("name"),
+                        "level": entry.get("level"),
+                        "realm": realm.get("name"),
+                        "realm_slug": realm.get("slug"),
+                        "class": playable_class.get("name"),
+                        "class_id": playable_class.get("id"),
+                        "race": playable_race.get("name"),
+                        "race_id": playable_race.get("id"),
+                        "faction": faction.get("name"),
+                        "profile_url": character.get("href"),
+                    }
+                )
+
+        return characters
