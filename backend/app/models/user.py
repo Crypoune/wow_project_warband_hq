@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
@@ -34,4 +34,10 @@ class User(Base):
     last_login: Mapped[datetime | None] = mapped_column(
         DateTime,
         nullable=True,
+    )
+
+    characters: Mapped[list["Character"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )

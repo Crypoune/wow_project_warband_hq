@@ -6,6 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.core.config import settings
 from app.api.health import router as health_router
 from app.api.auth import router as auth_router
+from app.api.characters import router as characters_router
 from app.core.exceptions import (
     http_exception_handler,
     validation_exception_handler,
@@ -45,3 +46,4 @@ app.add_exception_handler(
 
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(characters_router)
