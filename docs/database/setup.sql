@@ -13,4 +13,4 @@ GRANT CONNECT ON DATABASE warband_hq TO warband_hq_user;
 
 \connect warband_hq
 
-GRANT USAGE ON SCHEMA public TO warband_hq_user;
+GRANT USAGE, CREATE ON SCHEMA public TO warband_hq_user;
