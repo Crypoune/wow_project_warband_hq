@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.dependencies import CurrentAuth, get_current_auth
+from app.services.auth_service import InvalidBlizzardProfileError
 from app.services.character_service import CharacterService
 
 
@@ -74,6 +75,12 @@ def import_characters(
         return {"characters": characters}
 
     except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Blizzard returned an unexpected response"},
+        )
+
+    except InvalidBlizzardProfileError:
         raise HTTPException(
             status_code=502,
             detail={"message": "Blizzard returned an unexpected response"},

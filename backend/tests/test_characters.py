@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.main import app
+from app.services.auth_service import InvalidBlizzardProfileError
 from app.core.dependencies import CurrentAuth, get_current_auth
 
 
@@ -423,6 +424,24 @@ def test_character_routes_handle_invalid_blizzard_json(
         side_effect=make_blizzard_invalid_json_error(),
     ):
         response = client.request(method, path, json=payload)
+
+    assert response.status_code == 502
+    assert response.json()["message"] == (
+        "Blizzard returned an unexpected response"
+    )
+
+
+def test_import_characters_invalid_blizzard_profile_returns_502():
+    with patch(
+        "app.api.characters.character_service.import_characters",
+        side_effect=InvalidBlizzardProfileError(
+            "Invalid Blizzard profile structure"
+        ),
+    ):
+        response = client.post(
+            "/api/characters/import",
+            json={"character_ids": [123]},
+        )
 
     assert response.status_code == 502
     assert response.json()["message"] == (

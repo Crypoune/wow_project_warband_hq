@@ -6,6 +6,10 @@ import httpx
 from app.core.config import Settings
 
 
+class InvalidBlizzardProfileError(Exception):
+    """Raised when Blizzard returns an invalid profile structure."""
+
+
 class AuthService:
     """Gère la logique d'authentification Blizzard."""
 
@@ -95,25 +99,25 @@ class AuthService:
         profile = self.get_account_profile(access_token)
 
         if not isinstance(profile, dict):
-            raise ValueError("Invalid Blizzard profile structure")
+            raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
 
         accounts = profile.get("wow_accounts", [])
 
         if not isinstance(accounts, list):
-            raise ValueError("Invalid Blizzard profile structure")
+            raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
 
         if not all(isinstance(account, dict) for account in accounts):
-            raise ValueError("Invalid Blizzard profile structure")
+            raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
 
         # Vérifie que chaque compte contient une liste de personnages valide.
         for account in accounts:
             account_characters = account.get("characters", [])
 
             if not isinstance(account_characters, list):
-                raise ValueError("Invalid Blizzard profile structure")
+                raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
 
             if not all(isinstance(entry, dict) for entry in account_characters):
-                raise ValueError("Invalid Blizzard profile structure")
+                raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
 
         characters = []
 
@@ -133,7 +137,7 @@ class AuthService:
                 for field in nested_fields:
                     value = entry.get(field, {})
                     if not isinstance(value, dict):
-                        raise ValueError("Invalid Blizzard profile structure")
+                        raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
 
                 character = entry.get("character", {})
                 realm = entry.get("realm", {})

@@ -2,7 +2,10 @@ import pytest
 from unittest.mock import patch
 
 from app.core.config import settings
-from app.services.auth_service import AuthService
+from app.services.auth_service import (
+    AuthService,
+    InvalidBlizzardProfileError,
+)
 
 
 @pytest.fixture
@@ -22,7 +25,10 @@ def test_get_account_characters_rejects_invalid_profile(
         "get_account_profile",
         return_value=invalid_profile,
     ):
-        with pytest.raises(ValueError, match="Invalid Blizzard profile structure"):
+        with pytest.raises(
+            InvalidBlizzardProfileError,
+            match="Invalid Blizzard profile structure"
+        ):
             auth_service.get_account_characters("fake-access-token")
 
 
@@ -41,7 +47,10 @@ def test_get_account_characters_rejects_invalid_accounts(
         "get_account_profile",
         return_value={"wow_accounts": invalid_accounts},
     ):
-        with pytest.raises(ValueError, match="Invalid Blizzard profile structure"):
+        with pytest.raises(
+            InvalidBlizzardProfileError,
+            match="Invalid Blizzard profile structure"
+        ):
             auth_service.get_account_characters("fake-access-token")
 
 @pytest.mark.parametrize(
@@ -65,7 +74,10 @@ def test_get_account_characters_rejects_invalid_characters(
         "get_account_profile",
         return_value=profile,
     ):
-        with pytest.raises(ValueError, match="Invalid Blizzard profile structure"):
+        with pytest.raises(
+            InvalidBlizzardProfileError,
+            match="Invalid Blizzard profile structure"
+        ):
             auth_service.get_account_characters("fake-access-token")
 
 @pytest.mark.parametrize(
@@ -103,5 +115,8 @@ def test_get_account_characters_rejects_invalid_nested_data(
         "get_account_profile",
         return_value=profile,
     ):
-        with pytest.raises(ValueError, match="Invalid Blizzard profile structure"):
+        with pytest.raises(
+            InvalidBlizzardProfileError,
+            match="Invalid Blizzard profile structure"
+        ):
             auth_service.get_account_characters("fake-access-token")
