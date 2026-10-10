@@ -37,11 +37,19 @@ def get_available_characters(
             detail={"message": "Blizzard returned an unexpected response"},
         )
 
-    except httpx.HTTPStatusError:
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 401:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "message": "Blizzard access token is invalid or expired"
+                },
+            ) from exc
+
         raise HTTPException(
             status_code=502,
             detail={"message": "Blizzard returned an HTTP error"},
-        )
+        ) from exc
 
     except httpx.RequestError:
         raise HTTPException(
@@ -77,11 +85,19 @@ def import_characters(
             detail={"message": str(exc)},
         )
 
-    except httpx.HTTPStatusError:
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 401:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "message": "Blizzard access token is invalid or expired"
+                },
+            ) from exc
+
         raise HTTPException(
             status_code=502,
             detail={"message": "Blizzard returned an HTTP error"},
-        )
+        ) from exc
 
     except httpx.RequestError:
         raise HTTPException(
@@ -115,11 +131,21 @@ def get_characters(
             detail={"message": "Blizzard returned an unexpected response"},
         )
 
-    except httpx.HTTPStatusError:
+
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 401:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "message": "Blizzard access token is invalid or expired"
+                },
+            ) from exc
+
         raise HTTPException(
             status_code=502,
             detail={"message": "Blizzard returned an HTTP error"},
-        )
+        ) from exc
+
 
     except httpx.RequestError:
         raise HTTPException(

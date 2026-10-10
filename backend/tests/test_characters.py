@@ -58,6 +58,20 @@ def make_blizzard_http_error():
     )
 
 
+def make_blizzard_unauthorized_error():
+    request = httpx.Request(
+        "GET",
+        "https://eu.api.blizzard.com/profile/user/wow",
+    )
+    response = httpx.Response(401, request=request)
+
+    return httpx.HTTPStatusError(
+        "Invalid or expired Blizzard token",
+        request=request,
+        response=response,
+    )
+
+
 def make_blizzard_connection_error():
     request = httpx.Request(
         "GET",
@@ -79,6 +93,48 @@ def test_get_available_characters_success():
     assert response.status_code == 200
     assert response.json() == {"characters": CHARACTERS}
     mock_service.assert_called_once_with("test-access-token")
+
+
+def test_get_available_characters_with_invalid_token():
+    with patch(
+        "app.api.characters.character_service.get_available_characters",
+        side_effect=make_blizzard_unauthorized_error(),
+    ):
+        response = client.get("/api/characters/available")
+
+    assert response.status_code == 401
+    assert response.json()["message"] == (
+        "Blizzard access token is invalid or expired"
+    )
+
+
+def test_import_characters_with_invalid_token():
+    with patch(
+        "app.api.characters.character_service.import_characters",
+        side_effect=make_blizzard_unauthorized_error(),
+    ):
+        response = client.post(
+            "/api/characters/import",
+            json={"character_ids": [123]},
+        )
+
+    assert response.status_code == 401
+    assert response.json()["message"] == (
+        "Blizzard access token is invalid or expired"
+    )
+
+
+def test_get_characters_with_invalid_token():
+    with patch(
+        "app.api.characters.character_service.get_imported_characters",
+        side_effect=make_blizzard_unauthorized_error(),
+    ):
+        response = client.get("/api/characters")
+
+    assert response.status_code == 401
+    assert response.json()["message"] == (
+        "Blizzard access token is invalid or expired"
+    )
 
 
 def test_get_available_characters_empty():
