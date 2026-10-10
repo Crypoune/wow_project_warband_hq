@@ -105,3 +105,35 @@ def test_get_imported_characters_only_returns_current_users_characters(
     assert result == []
     db.scalars.assert_called_once()
     service.auth_service.get_account_characters.assert_not_called()
+
+
+def test_get_imported_characters_handles_missing_blizzard_character(service):
+    imported_character = SimpleNamespace(
+        id=1,
+        blizzard_character_id=999,
+        is_favorite=False,
+        imported_at=None,
+        last_synced_at=None,
+    )
+
+    db = MagicMock()
+    db.scalars.return_value.all.return_value = [imported_character]
+
+    service.auth_service.get_account_characters.return_value = (
+        AVAILABLE_CHARACTERS
+    )
+
+    with patch(
+        "app.services.character_service.SessionLocal"
+    ) as mock_session_local:
+        mock_session_local.return_value.__enter__.return_value = db
+
+        result = service.get_imported_characters(
+            user_id=1,
+            access_token="test-token",
+        )
+
+    assert len(result) == 1
+    assert result[0]["id"] == 1
+    assert result[0]["blizzard_character_id"] == 999
+    assert result[0]["is_favorite"] is False

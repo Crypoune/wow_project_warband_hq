@@ -310,6 +310,19 @@ def test_get_imported_characters_connection_error():
     )
 
 
+def test_get_imported_characters_database_error_returns_500():
+    with patch(
+        "app.api.characters.character_service.get_imported_characters",
+        side_effect=SQLAlchemyError("Database unavailable"),
+    ):
+        response = client.get("/api/characters")
+
+    assert response.status_code == 500
+    assert response.json()["message"] == (
+        "Unable to retrieve imported characters"
+    )
+
+
 # Authentication
 
 

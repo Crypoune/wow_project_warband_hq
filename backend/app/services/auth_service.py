@@ -93,12 +93,48 @@ class AuthService:
         """Récupère les personnages de tous les comptes WoW."""
 
         profile = self.get_account_profile(access_token)
+
+        if not isinstance(profile, dict):
+            raise ValueError("Invalid Blizzard profile structure")
+
+        accounts = profile.get("wow_accounts", [])
+
+        if not isinstance(accounts, list):
+            raise ValueError("Invalid Blizzard profile structure")
+
+        if not all(isinstance(account, dict) for account in accounts):
+            raise ValueError("Invalid Blizzard profile structure")
+
+        # Vérifie que chaque compte contient une liste de personnages valide.
+        for account in accounts:
+            account_characters = account.get("characters", [])
+
+            if not isinstance(account_characters, list):
+                raise ValueError("Invalid Blizzard profile structure")
+
+            if not all(isinstance(entry, dict) for entry in account_characters):
+                raise ValueError("Invalid Blizzard profile structure")
+
         characters = []
 
         # Parcourt les comptes WoW associés au compte Blizzard.
-        for account in profile.get("wow_accounts", []):
+        for account in accounts:
             # Parcourt les personnages de chaque compte WoW.
             for entry in account.get("characters", []):
+                # Les objets imbriqués sont facultatifs, mais doivent être des dictionnaires.
+                nested_fields = (
+                    "character",
+                    "realm",
+                    "playable_class",
+                    "playable_race",
+                    "faction",
+                )
+
+                for field in nested_fields:
+                    value = entry.get(field, {})
+                    if not isinstance(value, dict):
+                        raise ValueError("Invalid Blizzard profile structure")
+
                 character = entry.get("character", {})
                 realm = entry.get("realm", {})
                 playable_class = entry.get("playable_class", {})
