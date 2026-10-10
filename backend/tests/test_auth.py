@@ -1,7 +1,9 @@
 import base64
 import json
+import httpx
 from datetime import datetime, timedelta, timezone
 
+from sqlalchemy.exc import SQLAlchemyError
 from itsdangerous import TimestampSigner
 from app.core.config import settings
 from unittest.mock import MagicMock, patch
@@ -116,7 +118,6 @@ def test_callback_success():
     fake_db.commit.assert_called_once()
     mock_auth_session.assert_called_once()
 
-
 def test_logout_deletes_existing_session():
     """Vérifie que la déconnexion supprime la session côté serveur."""
 
@@ -203,7 +204,6 @@ def test_me_without_session_returns_401():
     assert response.status_code == 401
     assert response.json()["detail"]["message"] == "Authentication required"
 
-
 def test_me_with_unknown_session_returns_401():
     """Refuse l'accès si la session est absente de la base."""
 
@@ -221,7 +221,6 @@ def test_me_with_unknown_session_returns_401():
 
     assert response.status_code == 401
     assert response.json()["detail"]["message"] == "Invalid session"
-
 
 def test_me_with_expired_session_returns_401():
     """Refuse l'accès si la session a expiré."""
@@ -245,7 +244,6 @@ def test_me_with_expired_session_returns_401():
 
     assert response.status_code == 401
     assert response.json()["detail"]["message"] == "Session expired"
-
 
 def test_me_with_valid_session_returns_user():
     """Retourne les informations de l'utilisateur connecté."""
@@ -282,3 +280,150 @@ def test_me_with_valid_session_returns_user():
     }
 
     fake_db.get.assert_called_once_with(User, 42)
+
+def test_callback_blizzard_http_error_returns_502():
+    """Vérifie qu'une erreur HTTP Blizzard renvoie une erreur 502."""
+
+    request = httpx.Request("POST", "https://oauth.battle.net/token")
+    response = httpx.Response(401, request=request)
+    error = httpx.HTTPStatusError(
+        "Unauthorized",
+        request=request,
+        response=response,
+    )
+
+    with (
+        patch(
+            "app.api.auth.auth_service.validate_oauth_state",
+            return_value=True,
+        ),
+        patch(
+            "app.api.auth.auth_service.exchange_code_for_token",
+            side_effect=error,
+        ),
+    ):
+        with TestClient(app) as client:
+            client.get("/api/auth/login", follow_redirects=False)
+            response = client.get(
+                "/api/auth/callback",
+                params={"code": "fake-code", "state": "valid-state"},
+            )
+
+    assert response.status_code == 502
+    assert response.json()["detail"]["message"] == (
+        "Blizzard returned an HTTP error"
+    )
+
+def test_callback_blizzard_network_error_returns_502():
+    """Vérifie qu'une erreur réseau Blizzard renvoie une erreur 502."""
+
+    request = httpx.Request("POST", "https://oauth.battle.net/token")
+    error = httpx.ConnectError("Connection failed", request=request)
+
+    with (
+        patch(
+            "app.api.auth.auth_service.validate_oauth_state",
+            return_value=True,
+        ),
+        patch(
+            "app.api.auth.auth_service.exchange_code_for_token",
+            side_effect=error,
+        ),
+    ):
+        with TestClient(app) as client:
+            client.get("/api/auth/login", follow_redirects=False)
+            response = client.get(
+                "/api/auth/callback",
+                params={"code": "fake-code", "state": "valid-state"},
+            )
+
+    assert response.status_code == 502
+    assert response.json()["detail"]["message"] == (
+        "Unable to contact Blizzard"
+    )
+
+def test_callback_database_error_returns_500():
+    """Vérifie qu'une erreur SQL renvoie une erreur 500."""
+
+    fake_db = MagicMock()
+    fake_db.scalar.side_effect = SQLAlchemyError(
+        "Database unavailable"
+    )
+
+    with (
+        patch(
+            "app.api.auth.auth_service.validate_oauth_state",
+            return_value=True,
+        ),
+        patch(
+            "app.api.auth.auth_service.exchange_code_for_token",
+            return_value={
+                "access_token": "fake-access-token",
+                "expires_in": 3600,
+            },
+        ),
+        patch(
+            "app.api.auth.auth_service.get_account_profile",
+            return_value={"id": 12345},
+        ),
+        patch("app.api.auth.SessionLocal") as mock_session_local,
+    ):
+        mock_session_local.return_value.__enter__.return_value = fake_db
+
+        with TestClient(app) as client:
+            client.get("/api/auth/login", follow_redirects=False)
+            response = client.get(
+                "/api/auth/callback",
+                params={"code": "fake-code", "state": "valid-state"},
+            )
+
+    assert response.status_code == 500
+    assert response.json()["detail"]["message"] == (
+        "Unable to create authentication session"
+    )
+
+def test_me_database_error_returns_500():
+    """Vérifie qu'une erreur SQL renvoie une erreur 500."""
+
+    fake_db = MagicMock()
+    fake_db.scalar.side_effect = SQLAlchemyError(
+        "Database unavailable"
+    )
+
+    with patch(
+        "app.core.dependencies.SessionLocal",
+    ) as mock_session_local:
+        mock_session_local.return_value.__enter__.return_value = fake_db
+
+        with TestClient(app) as client:
+            _set_session_cookie(client, "test-session-token")
+            response = client.get("/api/auth/me")
+
+    assert response.status_code == 500
+    assert response.json()["detail"]["message"] == (
+        "Unable to verify authentication"
+    )
+
+def test_current_auth_database_error_returns_500():
+    """Vérifie qu'une erreur SQL bloque l'accès aux routes protégées."""
+
+    app.dependency_overrides.clear()
+
+    fake_db = MagicMock()
+    fake_db.scalar.side_effect = SQLAlchemyError(
+        "Database unavailable"
+    )
+
+    with patch(
+        "app.core.dependencies.SessionLocal",
+    ) as mock_session_local:
+        mock_session_local.return_value.__enter__.return_value = fake_db
+
+        with TestClient(app) as client:
+            _set_session_cookie(client, "test-session-token")
+            response = client.get("/api/characters/available")
+
+    assert response.status_code == 500
+    assert response.json()["detail"]["message"] == (
+        "Unable to verify authentication"
+    )
