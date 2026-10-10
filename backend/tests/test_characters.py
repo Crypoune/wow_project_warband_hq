@@ -100,7 +100,7 @@ def test_get_available_characters_blizzard_http_error():
         response = client.get("/api/characters/available")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an HTTP error"
     )
 
@@ -113,7 +113,7 @@ def test_get_available_characters_connection_error():
         response = client.get("/api/characters/available")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to contact Blizzard"
     )
 
@@ -153,7 +153,7 @@ def test_import_characters_invalid_id():
         )
 
     assert response.status_code == 400
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "One or more characters do not belong to the Blizzard account"
     )
 
@@ -169,7 +169,7 @@ def test_import_characters_blizzard_http_error():
         )
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an HTTP error"
     )
 
@@ -185,7 +185,7 @@ def test_import_characters_connection_error():
         )
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to contact Blizzard"
     )
 
@@ -236,7 +236,7 @@ def test_get_imported_characters_blizzard_http_error():
         response = client.get("/api/characters")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an HTTP error"
     )
 
@@ -249,7 +249,7 @@ def test_get_imported_characters_connection_error():
         response = client.get("/api/characters")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to contact Blizzard"
     )
 
@@ -263,7 +263,7 @@ def test_available_characters_requires_authentication():
     response = client.get("/api/characters/available")
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Authentication required"
     )
 
@@ -277,7 +277,7 @@ def test_import_characters_requires_authentication():
     )
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Authentication required"
     )
 
@@ -288,7 +288,7 @@ def test_imported_characters_requires_authentication():
     response = client.get("/api/characters")
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Authentication required"
     )
 
@@ -356,6 +356,6 @@ def test_character_routes_handle_invalid_blizzard_json(
         response = client.request(method, path, json=payload)
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an unexpected response"
     )

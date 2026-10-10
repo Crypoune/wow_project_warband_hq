@@ -39,7 +39,7 @@ def test_callback_without_state_returns_400():
         )
 
     assert response.status_code == 400
-    assert response.json()["detail"]["message"] == "Missing OAuth state"
+    assert response.json()["message"] == "Missing OAuth state"
 
 def test_callback_with_invalid_state_returns_400():
     """Vérifie qu'un state incorrect est refusé."""
@@ -54,7 +54,7 @@ def test_callback_with_invalid_state_returns_400():
         )
 
     assert response.status_code == 400
-    assert response.json()["detail"]["message"] == "Invalid OAuth state"
+    assert response.json()["message"] == "Invalid OAuth state"
 
 def test_logout_without_session():
     """Vérifie que la déconnexion fonctionne sans session existante."""
@@ -202,7 +202,7 @@ def test_me_without_session_returns_401():
         response = client.get("/api/auth/me")
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == "Authentication required"
+    assert response.json()["message"] == "Authentication required"
 
 def test_me_with_unknown_session_returns_401():
     """Refuse l'accès si la session est absente de la base."""
@@ -220,7 +220,7 @@ def test_me_with_unknown_session_returns_401():
             response = client.get("/api/auth/me")
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == "Invalid session"
+    assert response.json()["message"] == "Invalid session"
 
 def test_me_with_expired_session_returns_401():
     """Refuse l'accès si la session a expiré."""
@@ -243,7 +243,7 @@ def test_me_with_expired_session_returns_401():
             response = client.get("/api/auth/me")
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == "Session expired"
+    assert response.json()["message"] == "Session expired"
 
 def test_me_with_valid_session_returns_user():
     """Retourne les informations de l'utilisateur connecté."""
@@ -310,7 +310,7 @@ def test_callback_blizzard_http_error_returns_502():
             )
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an HTTP error"
     )
 
@@ -338,7 +338,7 @@ def test_callback_blizzard_network_error_returns_502():
             )
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to contact Blizzard"
     )
 
@@ -378,7 +378,7 @@ def test_callback_database_error_returns_500():
             )
 
     assert response.status_code == 500
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to create authentication session"
     )
 
@@ -400,7 +400,7 @@ def test_me_database_error_returns_500():
             response = client.get("/api/auth/me")
 
     assert response.status_code == 500
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to verify authentication"
     )
 
@@ -424,6 +424,6 @@ def test_current_auth_database_error_returns_500():
             response = client.get("/api/characters/available")
 
     assert response.status_code == 500
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to verify authentication"
     )
