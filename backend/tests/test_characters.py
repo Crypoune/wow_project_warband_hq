@@ -1,7 +1,8 @@
-
 import httpx
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.main import app
 from app.core.dependencies import CurrentAuth, get_current_auth
@@ -287,3 +288,28 @@ def test_imported_characters_requires_authentication():
     assert response.json()["detail"]["message"] == (
         "Authentication required"
     )
+
+def test_get_current_auth_database_error_returns_500():
+    """Vérifie qu'une erreur SQL renvoie une erreur 500."""
+
+    request = MagicMock()
+    request.session = {"session_token": "test-session-token"}
+
+    fake_db = MagicMock()
+    fake_db.scalar.side_effect = SQLAlchemyError(
+        "Database unavailable"
+    )
+
+    with patch(
+        "app.core.dependencies.SessionLocal",
+    ) as mock_session_local:
+        mock_session_local.return_value.__enter__.return_value = fake_db
+
+        try:
+            get_current_auth(request)
+            assert False, "Une HTTPException était attendue"
+        except HTTPException as exc:
+            assert exc.status_code == 500
+            assert exc.detail["message"] == (
+                "Unable to verify authentication"
+            )
