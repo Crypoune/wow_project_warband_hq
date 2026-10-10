@@ -1,7 +1,10 @@
+import json
+from unittest.mock import MagicMock, patch
+
 import httpx
+import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.main import app
@@ -55,6 +58,20 @@ def make_blizzard_http_error():
     )
 
 
+def make_blizzard_unauthorized_error():
+    request = httpx.Request(
+        "GET",
+        "https://eu.api.blizzard.com/profile/user/wow",
+    )
+    response = httpx.Response(401, request=request)
+
+    return httpx.HTTPStatusError(
+        "Invalid or expired Blizzard token",
+        request=request,
+        response=response,
+    )
+
+
 def make_blizzard_connection_error():
     request = httpx.Request(
         "GET",
@@ -78,6 +95,48 @@ def test_get_available_characters_success():
     mock_service.assert_called_once_with("test-access-token")
 
 
+def test_get_available_characters_with_invalid_token():
+    with patch(
+        "app.api.characters.character_service.get_available_characters",
+        side_effect=make_blizzard_unauthorized_error(),
+    ):
+        response = client.get("/api/characters/available")
+
+    assert response.status_code == 401
+    assert response.json()["message"] == (
+        "Blizzard access token is invalid or expired"
+    )
+
+
+def test_import_characters_with_invalid_token():
+    with patch(
+        "app.api.characters.character_service.import_characters",
+        side_effect=make_blizzard_unauthorized_error(),
+    ):
+        response = client.post(
+            "/api/characters/import",
+            json={"character_ids": [123]},
+        )
+
+    assert response.status_code == 401
+    assert response.json()["message"] == (
+        "Blizzard access token is invalid or expired"
+    )
+
+
+def test_get_characters_with_invalid_token():
+    with patch(
+        "app.api.characters.character_service.get_imported_characters",
+        side_effect=make_blizzard_unauthorized_error(),
+    ):
+        response = client.get("/api/characters")
+
+    assert response.status_code == 401
+    assert response.json()["message"] == (
+        "Blizzard access token is invalid or expired"
+    )
+
+
 def test_get_available_characters_empty():
     with patch(
         "app.api.characters.character_service.get_available_characters",
@@ -97,7 +156,7 @@ def test_get_available_characters_blizzard_http_error():
         response = client.get("/api/characters/available")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an HTTP error"
     )
 
@@ -110,7 +169,7 @@ def test_get_available_characters_connection_error():
         response = client.get("/api/characters/available")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to contact Blizzard"
     )
 
@@ -150,7 +209,7 @@ def test_import_characters_invalid_id():
         )
 
     assert response.status_code == 400
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "One or more characters do not belong to the Blizzard account"
     )
 
@@ -166,7 +225,7 @@ def test_import_characters_blizzard_http_error():
         )
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an HTTP error"
     )
 
@@ -182,7 +241,7 @@ def test_import_characters_connection_error():
         )
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to contact Blizzard"
     )
 
@@ -233,7 +292,7 @@ def test_get_imported_characters_blizzard_http_error():
         response = client.get("/api/characters")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Blizzard returned an HTTP error"
     )
 
@@ -246,8 +305,21 @@ def test_get_imported_characters_connection_error():
         response = client.get("/api/characters")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Unable to contact Blizzard"
+    )
+
+
+def test_get_imported_characters_database_error_returns_500():
+    with patch(
+        "app.api.characters.character_service.get_imported_characters",
+        side_effect=SQLAlchemyError("Database unavailable"),
+    ):
+        response = client.get("/api/characters")
+
+    assert response.status_code == 500
+    assert response.json()["message"] == (
+        "Unable to retrieve imported characters"
     )
 
 
@@ -260,7 +332,7 @@ def test_available_characters_requires_authentication():
     response = client.get("/api/characters/available")
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Authentication required"
     )
 
@@ -274,7 +346,7 @@ def test_import_characters_requires_authentication():
     )
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Authentication required"
     )
 
@@ -285,7 +357,7 @@ def test_imported_characters_requires_authentication():
     response = client.get("/api/characters")
 
     assert response.status_code == 401
-    assert response.json()["detail"]["message"] == (
+    assert response.json()["message"] == (
         "Authentication required"
     )
 
@@ -313,3 +385,46 @@ def test_get_current_auth_database_error_returns_500():
             assert exc.detail["message"] == (
                 "Unable to verify authentication"
             )
+
+def make_blizzard_invalid_json_error():
+    """Simule une réponse Blizzard dont le JSON est invalide."""
+    return json.JSONDecodeError(
+        "Expecting value",
+        "<html>Unexpected response</html>",
+        0,
+    )
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "payload"),
+    [
+        ("GET", "/api/characters/available", None),
+        ("POST", "/api/characters/import", {"character_ids": [123]}),
+        ("GET", "/api/characters", None),
+    ],
+)
+
+
+def test_character_routes_handle_invalid_blizzard_json(
+    method,
+    path,
+    payload,
+):
+    """Vérifie qu'une réponse Blizzard invalide produit une erreur 502."""
+
+    with patch(
+        "app.api.characters.character_service.get_available_characters",
+        side_effect=make_blizzard_invalid_json_error(),
+    ), patch(
+        "app.api.characters.character_service.import_characters",
+        side_effect=make_blizzard_invalid_json_error(),
+    ), patch(
+        "app.api.characters.character_service.get_imported_characters",
+        side_effect=make_blizzard_invalid_json_error(),
+    ):
+        response = client.request(method, path, json=payload)
+
+    assert response.status_code == 502
+    assert response.json()["message"] == (
+        "Blizzard returned an unexpected response"
+    )

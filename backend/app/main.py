@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.sessions import SessionMiddleware
@@ -10,6 +10,7 @@ from app.api.characters import router as characters_router
 from app.core.exceptions import (
     http_exception_handler,
     validation_exception_handler,
+    unexpected_exception_handler,
 )
 
 
@@ -38,10 +39,17 @@ app.add_middleware(
     https_only=False,
 )
 
-app.add_exception_handler(Exception, http_exception_handler)
+app.add_exception_handler(
+    HTTPException,
+    http_exception_handler,
+)
 app.add_exception_handler(
     RequestValidationError,
     validation_exception_handler,
+)
+app.add_exception_handler(
+    Exception,
+    unexpected_exception_handler,
 )
 
 app.include_router(health_router)
