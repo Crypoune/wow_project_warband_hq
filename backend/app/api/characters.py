@@ -1,5 +1,6 @@
-import httpx
+import json
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
@@ -30,6 +31,12 @@ def get_available_characters(
         )
         return {"characters": characters}
 
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Blizzard returned an unexpected response"},
+        )
+
     except httpx.HTTPStatusError:
         raise HTTPException(
             status_code=502,
@@ -57,6 +64,12 @@ def import_characters(
             character_ids=payload.character_ids,
         )
         return {"characters": characters}
+
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Blizzard returned an unexpected response"},
+        )
 
     except ValueError as exc:
         raise HTTPException(
@@ -95,6 +108,12 @@ def get_characters(
             access_token=current_auth.access_token,
         )
         return {"characters": characters}
+
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Blizzard returned an unexpected response"},
+        )
 
     except httpx.HTTPStatusError:
         raise HTTPException(
