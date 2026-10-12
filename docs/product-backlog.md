@@ -19,11 +19,11 @@ The backlog will be progressively refined during development. Technical tasks wi
 
 | ID    | User Story                                                                                                                                 | Priority  | Dependency   | Status  |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------------ | ------- |
-| US-01 | As a World of Warcraft player, I want to log in with my Blizzard account so that I can access my character information.                    | Must Have | /            | Backlog |
-| US-02 | As a logged-in player, I want to retrieve my World of Warcraft characters so that I can see the characters available on my account.        | Must Have | US-01        | Backlog |
+| US-01 | As a World of Warcraft player, I want to log in with my Blizzard account so that I can access my character information.                    | Must Have | /            | Done    |
+| US-02 | As a logged-in player, I want to retrieve my World of Warcraft characters so that I can see the characters available on my account.        | Must Have | US-01        | Done    |
 | US-03 | As a player, I want to view my characters in a centralized interface so that I can quickly get an overview of my characters.               | Must Have | US-02        | Backlog |
 | US-04 | As a player, I want to view the main information about a character so that I can better understand its current status and progression.     | Must Have | US-03        | Backlog |
-| US-05 | As a player, I want to be informed when information cannot be retrieved so that I can understand why my character data is unavailable.     | Must Have | US-01, US-02 | Backlog |
+| US-05 | As a player, I want to be informed when information cannot be retrieved so that I can understand why my character data is unavailable.     | Must Have | US-01, US-02 | Done    |
 | US-06 | As a player, I want to select a character so that I can view a more detailed overview of its information and progression.                  | Must Have | US-03, US-04 | Backlog |
 | US-07 | As a player, I want to filter or sort my characters so that I can find a specific character more easily.                                   | Must Have | US-03        | Backlog |
 | US-08 | As a player, I want to mark characters as favorites so that I can quickly identify the characters I use or track most often.               | Must Have | US-03        | Backlog |
