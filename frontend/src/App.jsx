@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 
-const API_URL = "http://127.0.0.1:8000";
+// Adresse commune du backend FastAPI.
+import { API_URL } from "./services/api.js";
+
+// Fonctions dédiées à l'authentification auprès du backend.
+import { getCurrentUser, logout } from "./services/authService.js";
+
+// Fonctions dédiées à la récupération des personnages.
+import {
+  getAvailableCharacters,
+  importCharacters,
+} from "./services/characterService.js";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,49 +29,40 @@ function App() {
     setSuccess("");
 
     try {
-      const response = await fetch(`${API_URL}/api/characters/available`, {
-        credentials: "include",
-      });
+      // Le service récupère les personnages et renvoie un tableau.
+      const availableCharacters = await getAvailableCharacters();
 
-      if (!response.ok) {
-        throw new Error(
-          response.status === 401
-            ? "Your session has expired. Please log in again."
-            : "Unable to retrieve your characters.",
-        );
-      }
-
-      const data = await response.json();
-      setCharacters(data.characters ?? []);
+      // React conserve la responsabilité de mettre à jour l'interface.
+      setCharacters(availableCharacters);
       setSelectedIds([]);
     } catch (err) {
+      // On conserve le message fourni par le service lorsqu'il existe.
       setError(
         err.message || "Unable to contact Warband HQ. Please try again.",
       );
     } finally {
+      // L'indicateur de chargement est désactivé même en cas d'erreur.
       setLoadingCharacters(false);
     }
   }, []);
 
+  // Vérifie si l'utilisateur possède déjà une session valide.
   useEffect(() => {
     async function fetchCurrentUser() {
       try {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-          credentials: "include",
-        });
+        // Le service s'occupe de la requête HTTP et de la gestion du statut 401.
+        const data = await getCurrentUser();
 
-        if (response.status === 401) {
+        // Si aucune session n'existe, l'utilisateur reste déconnecté.
+        if (data === null) {
           setUser(null);
           return;
         }
 
-        if (!response.ok) {
-          throw new Error("Unable to retrieve your profile.");
-        }
-
-        const data = await response.json();
+        // Une session valide nous fournit les informations de l'utilisateur.
         setUser(data);
 
+        // Après le retour de Blizzard, on retire le paramètre "auth" de l'URL.
         const url = new URL(window.location.href);
 
         if (url.searchParams.has("auth")) {
@@ -69,8 +70,10 @@ function App() {
           window.history.replaceState({}, "", url);
         }
       } catch {
+        // En cas de problème réseau ou serveur, on affiche un message générique.
         setError("Unable to contact Warband HQ. Please try again.");
       } finally {
+        // Dans tous les cas, on termine l'état de chargement initial.
         setLoading(false);
       }
     }
@@ -84,28 +87,27 @@ function App() {
     }
   }, [user, fetchAvailableCharacters]);
 
+  // Redirige l'utilisateur vers le parcours de connexion Blizzard.
   const handleBlizzardLogin = () => {
     window.location.href = `${API_URL}/api/auth/login`;
   };
 
+  // Déconnecte l'utilisateur et met à jour l'interface.
   const handleLogout = async () => {
+    // On efface les anciens messages avant de commencer.
     setError("");
     setSuccess("");
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      // Le service envoie la requête de déconnexion au backend.
+      await logout();
 
-      if (!response.ok) {
-        throw new Error("Logout failed.");
-      }
-
+      // Une fois la déconnexion réussie, on réinitialise les données locales.
       setUser(null);
       setCharacters([]);
       setSelectedIds([]);
     } catch {
+      // Si la déconnexion échoue, on conserve les données et on affiche une erreur.
       setError("Unable to log out. Please try again.");
     }
   };
@@ -118,45 +120,40 @@ function App() {
     );
   };
 
+  // Importe les personnages sélectionnés dans Warband HQ.
   const handleImport = async () => {
+    // On ne lance pas d'importation si aucune sélection n'existe
+    // ou si une importation est déjà en cours.
     if (selectedIds.length === 0 || importing) {
       return;
     }
 
+    // On efface les anciens messages et on active le chargement.
     setError("");
     setSuccess("");
     setImporting(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/characters/import`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          character_ids: selectedIds,
-        }),
-      });
+      // Le service effectue la requête HTTP et renvoie la réponse.
+      const data = await importCharacters(selectedIds);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail?.message || "Unable to import characters.");
-      }
-
+      // Le backend renvoie les personnages effectivement importés.
       const importedCount = data.characters?.length ?? 0;
 
+      // On adapte le message au résultat de l'importation.
       setSuccess(
         importedCount > 0
           ? `${importedCount} character(s) imported successfully.`
           : "No new characters were imported. They may already be in your warband.",
       );
 
+      // Une fois l'opération réussie, on vide la sélection.
       setSelectedIds([]);
     } catch (err) {
+      // On affiche le message renvoyé par le service, si disponible.
       setError(err.message || "Unable to import characters. Please try again.");
     } finally {
+      // On arrête toujours l'indicateur de chargement.
       setImporting(false);
     }
   };
