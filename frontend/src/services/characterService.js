@@ -64,3 +64,32 @@ export async function importCharacters(characterIds) {
   // Renvoie les données des personnages importés à App.jsx.
   return data;
 }
+
+/*
+ * Récupère les personnages déjà importés dans Warband HQ.
+ *
+ * Cette fonction communique avec le backend pour obtenir
+ * la collection de personnages de l'utilisateur connecté.
+ */
+export async function getImportedCharacters() {
+  // Demande au backend la liste des personnages importés.
+  const response = await fetch(`${API_URL}/api/characters`, {
+    // Transmet le cookie de session utilisateur.
+    credentials: "include",
+  });
+
+  // Si le backend signale une erreur, on la transforme en erreur JavaScript.
+  if (!response.ok) {
+    throw new Error(
+      response.status === 401
+        ? "Your session has expired. Please log in again."
+        : "Unable to retrieve imported characters.",
+    );
+  }
+
+  // Convertit la réponse JSON en objet JavaScript.
+  const data = await response.json();
+
+  // Garantit que la fonction renvoie toujours un tableau de personnages.
+  return data.characters ?? [];
+}

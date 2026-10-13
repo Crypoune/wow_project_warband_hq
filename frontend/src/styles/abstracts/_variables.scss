@@ -1,0 +1,57 @@
+// ========================================
+// COLORS
+// ========================================
+
+$color-background: #090d18;
+$color-background-secondary: #10192c;
+$color-surface: #111a2b;
+$color-surface-hover: #1c2940;
+
+$color-text-primary: #f4f0e6;
+$color-text-secondary: #aeb6c8;
+$color-text-muted: #6f7a91;
+
+$color-accent: #d7aa50;
+$color-accent-light: #f2c66d;
+
+$color-border: rgba(255, 255, 255, 0.08);
+$color-border-accent: rgba(215, 170, 80, 0.2);
+
+// ========================================
+// LAYOUT
+// ========================================
+
+$header-height: 76px;
+$header-height-mobile: 68px;
+
+$sidebar-width-expanded: 240px;
+$sidebar-width-collapsed: 76px;
+
+$sidebar-width-expanded-mobile: 200px;
+$sidebar-width-collapsed-mobile: 60px;
+
+// Largeur maximale du contenu principal sur les grands écrans.
+$content-max-width: 1600px;
+
+// ========================================
+// TRANSITIONS
+// ========================================
+
+$transition-fast: 180ms ease;
+$transition-layout: 220ms ease;
+
+// ========================================
+// SPACING
+// ========================================
+
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// ========================================
+// BREAKPOINTS
+// ========================================
+
+$breakpoint-mobile: 600px;

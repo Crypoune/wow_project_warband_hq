@@ -1,0 +1,51 @@
+@use "../abstracts/variables" as vars;
+
+// ========================================
+// APPLICATION FOOTER
+// ========================================
+
+.page-footer {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  justify-content: space-between;
+  gap: vars.$spacing-sm + vars.$spacing-xs;
+
+  width: calc(100% - var(--sidebar-width));
+  max-width: vars.$content-max-width;
+  margin-top: auto;
+  margin-left: var(--sidebar-width);
+  margin-right: 0;
+
+  padding-top: vars.$spacing-lg;
+
+  color: #748198;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.3px;
+
+  border-top: 1px solid #ffffff12;
+
+  transition:
+    margin-left vars.$transition-layout,
+    width vars.$transition-layout;
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+
+@media (max-width: vars.$breakpoint-mobile) {
+  .page-footer {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-footer {
+    transition: none;
+  }
+}

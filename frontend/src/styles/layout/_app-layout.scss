@@ -1,0 +1,90 @@
+@use "../abstracts/variables" as vars;
+
+// ========================================
+// APPLICATION PAGE
+// ========================================
+
+.app-page {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+
+  padding: 104px clamp(18px, 5vw, 72px) 28px;
+
+  background: radial-gradient(
+    ellipse at 50% 4%,
+    #1b2945 0%,
+    #10192c 42%,
+    #090d18 78%
+  );
+
+  --sidebar-width: #{vars.$sidebar-width-expanded};
+
+  &.sidebar-collapsed {
+    --sidebar-width: #{vars.$sidebar-width-collapsed};
+  }
+}
+
+// ========================================
+// BACKGROUND DECORATION
+// ========================================
+
+.app-background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(circle at 15% 20%, #d7aa500d 0, transparent 30%),
+    radial-gradient(circle at 85% 75%, #3977c20d 0, transparent 32%);
+}
+
+// ========================================
+// MAIN CONTENT
+// ========================================
+
+.app-content {
+  position: relative;
+  z-index: 1;
+
+  flex: 1;
+  min-width: 0;
+  width: calc(100% - var(--sidebar-width));
+  max-width: vars.$content-max-width;
+  margin-left: var(--sidebar-width);
+  margin-right: 0;
+
+  padding-top: 0;
+  padding-bottom: 48px;
+
+  transition:
+    margin-left vars.$transition-layout,
+    width vars.$transition-layout;
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+
+@media (max-width: vars.$breakpoint-mobile) {
+  .app-page {
+    --sidebar-width: #{vars.$sidebar-width-expanded-mobile};
+
+    &.sidebar-collapsed {
+      --sidebar-width: #{vars.$sidebar-width-collapsed-mobile};
+    }
+
+    padding: 88px 14px 18px;
+  }
+
+  .app-content {
+    padding-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-content {
+    transition: none;
+  }
+}

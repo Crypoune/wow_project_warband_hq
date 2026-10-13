@@ -1,0 +1,64 @@
+// ========================================
+// STATUS PANEL
+// ========================================
+
+.status-panel {
+  padding: 34px 20px;
+
+  border: 1px solid #ffffff15;
+  border-radius: 5px;
+
+  background: #090d184d;
+  text-align: center;
+
+  h2,
+  h3 {
+    margin: 0 0 10px;
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 21px;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+    color: #aab4c6;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+}
+
+// ========================================
+// FEEDBACK MESSAGES
+// ========================================
+
+.feedback-message {
+  margin: 22px 0 0;
+  padding: 14px 16px;
+
+  border: 1px solid;
+  border-radius: 4px;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+// ========================================
+// ERROR MESSAGE
+// ========================================
+
+.error-message {
+  border-color: #ff999955;
+  background: #ff55550d;
+  color: #ffb0b0;
+}
+
+// ========================================
+// SUCCESS MESSAGE
+// ========================================
+
+.success-message {
+  border-color: #7bcba255;
+  background: #4dbb7a0d;
+  color: #9de3b5;
+}
