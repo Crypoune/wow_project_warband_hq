@@ -1,0 +1,139 @@
+@use "../abstracts/variables" as vars;
+
+// ========================================
+// APP HEADER
+// ========================================
+
+.app-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: vars.$header-height;
+  padding: 0 32px;
+
+  background: rgba(9, 13, 24, 0.94);
+  border-bottom: 1px solid rgba(215, 170, 80, 0.2);
+  backdrop-filter: blur(16px);
+}
+
+// ========================================
+// BRAND
+// ========================================
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+
+  color: #f4f0e6;
+  text-decoration: none;
+
+  .brand-icon {
+    display: grid;
+    place-items: center;
+
+    width: 42px;
+    height: 42px;
+
+    color: #f2c66d;
+    font-size: 28px;
+
+    background: rgba(215, 170, 80, 0.08);
+    border: 1px solid rgba(215, 170, 80, 0.3);
+    border-radius: 12px;
+  }
+
+  strong {
+    display: block;
+    font-size: 19px;
+    letter-spacing: 0.5px;
+
+    span {
+      color: #f2c66d;
+    }
+  }
+
+  small {
+    display: block;
+    margin-top: 4px;
+
+    color: #858da1;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+}
+
+// ========================================
+// LOGOUT BUTTON
+// ========================================
+
+.logout-button {
+  padding: 9px 16px;
+
+  color: #e8dfcc;
+  font-size: 13px;
+
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  transition:
+    background vars.$transition-fast,
+    border-color vars.$transition-fast,
+    color vars.$transition-fast;
+
+  &:hover {
+    color: #f2c66d;
+    background: rgba(215, 170, 80, 0.08);
+    border-color: rgba(215, 170, 80, 0.45);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f2c66d;
+    outline-offset: 3px;
+  }
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+
+@media (max-width: vars.$breakpoint-mobile) {
+  .app-header {
+    min-height: vars.$header-height-mobile;
+    padding: 0 16px;
+  }
+
+  .app-brand {
+    gap: 8px;
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 24px;
+    }
+
+    strong {
+      font-size: 16px;
+    }
+
+    small {
+      font-size: 8px;
+      letter-spacing: 1px;
+    }
+  }
+
+  .logout-button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}

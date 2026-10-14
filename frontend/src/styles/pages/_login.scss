@@ -1,0 +1,134 @@
+@use "../abstracts/variables" as vars;
+
+// ========================================
+// LOGIN CARD
+// ========================================
+
+.login-card {
+  width: min(100%, 480px);
+  margin: 24px auto;
+  padding: 48px 42px 28px;
+
+  border: 1px solid #c9a45c55;
+  border-radius: 8px;
+
+  background: linear-gradient(160deg, #182238f5, #0d1423f8);
+  box-shadow:
+    0 24px 80px #00000070,
+    inset 0 1px 0 #ffffff0a;
+
+  text-align: center;
+}
+
+// ========================================
+// BRAND
+// ========================================
+
+.brand-label {
+  margin: 12px 0 10px;
+
+  color: #c7a96a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+.brand h1 {
+  margin: 0;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 8vw, 46px);
+  font-weight: 600;
+  letter-spacing: -1.5px;
+}
+
+.brand-description {
+  margin: 14px 0 0;
+  color: #aab4c6;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+// ========================================
+// LOGIN CONTENT
+// ========================================
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  margin: 32px 0;
+
+  color: #d8ad59;
+  font-size: 10px;
+
+  > span:first-child,
+  > span:last-child {
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, #c9a45c66);
+  }
+
+  > span:last-child {
+    transform: rotate(180deg);
+  }
+}
+
+.login-content h2 {
+  margin: 0;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.login-content > p:not(.login-note) {
+  margin: 14px 0 26px;
+
+  color: #aab4c6;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.login-note {
+  margin: 18px 0 0;
+  color: #7f8ba0;
+  font-size: 11px;
+}
+
+// ========================================
+// LOGIN FOOTER
+// ========================================
+
+.login-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-top: 38px;
+  padding-top: 20px;
+
+  border-top: 1px solid #ffffff12;
+
+  color: #748198;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.3px;
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+
+@media (max-width: vars.$breakpoint-mobile) {
+  .login-card {
+    padding: 36px 24px 24px;
+  }
+
+  .login-footer {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+}

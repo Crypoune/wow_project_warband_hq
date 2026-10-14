@@ -1,0 +1,40 @@
+@use "./variables" as vars;
+
+// ========================================
+// FLEXBOX
+// ========================================
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ========================================
+// FOCUS ACCESSIBILITY
+// ========================================
+
+@mixin focus-ring {
+  outline: 2px solid vars.$color-accent-light;
+  outline-offset: 3px;
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+
+@mixin mobile {
+  @media (max-width: vars.$breakpoint-mobile) {
+    @content;
+  }
+}
+
+// ========================================
+// REDUCED MOTION
+// ========================================
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}

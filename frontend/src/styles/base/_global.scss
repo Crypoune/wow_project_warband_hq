@@ -1,0 +1,23 @@
+// ========================================
+// GLOBAL STYLES
+// ========================================
+
+:root {
+  color: #f4f0e6;
+  background: #090d18;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid #f2c66d;
+  outline-offset: 4px;
+}
+
+::selection {
+  color: #090d18;
+  background: #d7aa50;
+}

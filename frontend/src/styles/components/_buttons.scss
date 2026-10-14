@@ -1,0 +1,120 @@
+@use "../abstracts/variables" as vars;
+
+// ========================================
+// SECONDARY BUTTON
+// ========================================
+
+.secondary-button {
+  padding: 10px 16px;
+  border: 1px solid #c9a45c55;
+  border-radius: 4px;
+
+  background: vars.$color-background-secondary;
+  color: vars.$color-accent-light;
+
+  cursor: pointer;
+
+  transition:
+    background vars.$transition-fast,
+    border-color vars.$transition-fast;
+
+  &:hover:not(:disabled) {
+    border-color: vars.$color-accent-light;
+    background: #1b2945;
+  }
+}
+
+// ========================================
+// BLIZZARD BUTTON
+// ========================================
+
+.blizzard-button {
+  display: flex;
+  width: 100%;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 12px 18px;
+  border: 1px solid #f3d78e;
+  border-radius: 4px;
+
+  background: linear-gradient(180deg, #e8c779, #c99b42);
+  color: #171b25;
+
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 750;
+
+  transition:
+    transform vars.$transition-fast,
+    filter vars.$transition-fast,
+    box-shadow vars.$transition-fast;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: 0 8px 24px #d7aa5026;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// ========================================
+// TEXT BUTTON
+// ========================================
+
+.text-button {
+  padding: 6px 0;
+  border: 0;
+
+  background: transparent;
+  color: vars.$color-accent-light;
+
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover:not(:disabled) {
+    color: #f3d78e;
+    text-decoration: underline;
+  }
+}
+
+// ========================================
+// SHARED BUTTON STATES
+// ========================================
+
+.blizzard-button,
+.secondary-button,
+.text-button {
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+// ========================================
+// BUTTON ICON
+// ========================================
+
+.button-icon {
+  font-size: 20px;
+}
+
+// ========================================
+// WARBand IMPORT BUTTON
+// ========================================
+
+.import-button {
+  width: auto;
+  min-width: 210px;
+}
+
+@media (max-width: vars.$breakpoint-mobile) {
+  .import-button {
+    width: 100%;
+  }
+}

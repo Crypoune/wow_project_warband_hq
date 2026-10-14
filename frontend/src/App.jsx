@@ -1,7 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
-import "./App.css";
+import AppHeader from "./components/layout/AppHeader.jsx";
+import Sidebar from "./components/layout/Sidebar.jsx";
+import Overview from "./pages/Overview.jsx";
+import MyWarband from "./pages/MyWarband.jsx";
+import Settings from "./pages/Settings.jsx";
 
-const API_URL = "http://127.0.0.1:8000";
+// Adresse commune du backend FastAPI.
+import { API_URL } from "./services/api.js";
+
+// Fonctions dédiées à l'authentification auprès du backend.
+import { getCurrentUser, logout } from "./services/authService.js";
+
+// Fonctions dédiées à la récupération des personnages.
+import {
+  getAvailableCharacters,
+  getImportedCharacters,
+  importCharacters,
+} from "./services/characterService.js";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -10,6 +25,17 @@ function App() {
   const [characters, setCharacters] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loadingCharacters, setLoadingCharacters] = useState(false);
+
+  // Personnages déjà importés dans Warband HQ.
+  const [importedCharacters, setImportedCharacters] = useState([]);
+
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
+  const [activePage, setActivePage] = useState("overview");
+
+  // Indique si la collection importée est en cours de chargement.
+  const [loadingImportedCharacters, setLoadingImportedCharacters] =
+    useState(false);
   const [importing, setImporting] = useState(false);
   const [success, setSuccess] = useState("");
 
@@ -19,49 +45,63 @@ function App() {
     setSuccess("");
 
     try {
-      const response = await fetch(`${API_URL}/api/characters/available`, {
-        credentials: "include",
-      });
+      // Le service récupère les personnages et renvoie un tableau.
+      const availableCharacters = await getAvailableCharacters();
 
-      if (!response.ok) {
-        throw new Error(
-          response.status === 401
-            ? "Your session has expired. Please log in again."
-            : "Unable to retrieve your characters.",
-        );
-      }
-
-      const data = await response.json();
-      setCharacters(data.characters ?? []);
+      // React conserve la responsabilité de mettre à jour l'interface.
+      setCharacters(availableCharacters);
       setSelectedIds([]);
     } catch (err) {
+      // On conserve le message fourni par le service lorsqu'il existe.
       setError(
         err.message || "Unable to contact Warband HQ. Please try again.",
       );
     } finally {
+      // L'indicateur de chargement est désactivé même en cas d'erreur.
       setLoadingCharacters(false);
     }
   }, []);
 
+  // Charge les personnages déjà importés dans Warband HQ.
+  const fetchImportedCharacters = useCallback(async () => {
+    // Active l'indicateur de chargement de la collection importée.
+    setLoadingImportedCharacters(true);
+
+    try {
+      // Le service récupère la collection auprès du backend.
+      const imported = await getImportedCharacters();
+
+      // Met à jour la liste des personnages importés dans React.
+      setImportedCharacters(imported);
+    } catch (err) {
+      // Affiche une erreur si la récupération de la collection échoue.
+      setError(
+        err.message ||
+          "Unable to retrieve imported characters. Please try again.",
+      );
+    } finally {
+      // Arrête toujours l'indicateur de chargement.
+      setLoadingImportedCharacters(false);
+    }
+  }, []);
+
+  // Vérifie si l'utilisateur possède déjà une session valide.
   useEffect(() => {
     async function fetchCurrentUser() {
       try {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-          credentials: "include",
-        });
+        // Le service s'occupe de la requête HTTP et de la gestion du statut 401.
+        const data = await getCurrentUser();
 
-        if (response.status === 401) {
+        // Si aucune session n'existe, l'utilisateur reste déconnecté.
+        if (data === null) {
           setUser(null);
           return;
         }
 
-        if (!response.ok) {
-          throw new Error("Unable to retrieve your profile.");
-        }
-
-        const data = await response.json();
+        // Une session valide nous fournit les informations de l'utilisateur.
         setUser(data);
 
+        // Après le retour de Blizzard, on retire le paramètre "auth" de l'URL.
         const url = new URL(window.location.href);
 
         if (url.searchParams.has("auth")) {
@@ -69,8 +109,10 @@ function App() {
           window.history.replaceState({}, "", url);
         }
       } catch {
+        // En cas de problème réseau ou serveur, on affiche un message générique.
         setError("Unable to contact Warband HQ. Please try again.");
       } finally {
+        // Dans tous les cas, on termine l'état de chargement initial.
         setLoading(false);
       }
     }
@@ -79,115 +121,164 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchAvailableCharacters();
+    if (!user) {
+      return;
     }
-  }, [user, fetchAvailableCharacters]);
 
+    // Regroupe le chargement des deux collections.
+    async function loadCharacters() {
+      await Promise.all([
+        fetchAvailableCharacters(),
+        fetchImportedCharacters(),
+      ]);
+    }
+
+    // Lance le chargement après la mise en place de l'effet.
+    loadCharacters();
+  }, [user, fetchAvailableCharacters, fetchImportedCharacters]);
+
+  // Redirige l'utilisateur vers le parcours de connexion Blizzard.
   const handleBlizzardLogin = () => {
     window.location.href = `${API_URL}/api/auth/login`;
   };
 
+  // Réinitialise les données utilisateur conservées dans l'état React.
+  const resetUserData = () => {
+    // Supprime l'utilisateur connecté.
+    setUser(null);
+
+    // Vide les personnages récupérés depuis Blizzard.
+    setCharacters([]);
+
+    // Vide les personnages déjà importés dans Warband HQ.
+    setImportedCharacters([]);
+
+    // Retire tous les personnages de la sélection.
+    setSelectedIds([]);
+  };
+
+  // Déconnecte l'utilisateur et met à jour l'interface.
   const handleLogout = async () => {
+    // Efface les anciens messages avant de commencer.
     setError("");
     setSuccess("");
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      // Attend la réponse du backend avant de réinitialiser les données locales.
+      await logout();
 
-      if (!response.ok) {
-        throw new Error("Logout failed.");
-      }
-
-      setUser(null);
-      setCharacters([]);
-      setSelectedIds([]);
-    } catch {
-      setError("Unable to log out. Please try again.");
+      // La déconnexion ayant réussi, on nettoie les données de l'interface.
+      resetUserData();
+    } catch (err) {
+      // En cas d'échec, on affiche un message sans effacer les données.
+      setError(err.message || "Unable to log out. Please try again.");
     }
   };
 
+  // Ajoute un personnage à la sélection ou l'en retire s'il est déjà sélectionné.
   const toggleCharacter = (characterId) => {
-    setSelectedIds((currentIds) =>
-      currentIds.includes(characterId)
-        ? currentIds.filter((id) => id !== characterId)
-        : [...currentIds, characterId],
-    );
+    // On demande à React de nous fournir la sélection précédente.
+    setSelectedIds((currentIds) => {
+      // Vérifie si l'identifiant du personnage est déjà présent dans le tableau.
+      const isAlreadySelected = currentIds.includes(characterId);
+
+      // Si le personnage est sélectionné, on le retire du tableau.
+      if (isAlreadySelected) {
+        // filter() crée un nouveau tableau sans l'identifiant concerné.
+        return currentIds.filter((id) => id !== characterId);
+      }
+
+      // Sinon, on crée un nouveau tableau contenant l'ancienne sélection
+      // et l'identifiant du personnage ajouté.
+      return [...currentIds, characterId];
+    });
   };
 
+  // Sélectionne tous les personnages disponibles ou retire toute la sélection.
+  const handleSelectAll = () => {
+    // React fournit la sélection précédente pour calculer la suivante.
+    setSelectedIds((previousIds) => {
+      // Vérifie si tous les personnages disponibles sont déjà sélectionnés.
+      const allSelected = previousIds.length === characters.length;
+
+      // Si tout est sélectionné, on vide la sélection.
+      if (allSelected) {
+        return [];
+      }
+
+      // Sinon, on sélectionne les identifiants de tous les personnages.
+      return characters.map((character) => character.id);
+    });
+  };
+
+  // Importe dans Warband HQ les personnages sélectionnés par l'utilisateur.
   const handleImport = async () => {
+    // Protection : aucun import n'est nécessaire si la sélection est vide.
+    // On bloque aussi une nouvelle demande pendant un import en cours.
     if (selectedIds.length === 0 || importing) {
       return;
     }
 
+    // Efface les anciens messages avant de lancer une nouvelle opération.
     setError("");
     setSuccess("");
+
+    // Active l'indicateur de chargement pour informer l'utilisateur.
     setImporting(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/characters/import`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          character_ids: selectedIds,
-        }),
-      });
+      // Envoie les identifiants sélectionnés au backend et attend sa réponse.
+      const data = await importCharacters(selectedIds);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail?.message || "Unable to import characters.");
-      }
-
+      // Récupère le nombre de personnages renvoyés par le backend.
+      // Le ?. évite une erreur si data.characters est absent.
+      // Le ?? 0 utilise zéro si le résultat est null ou undefined.
       const importedCount = data.characters?.length ?? 0;
 
+      // Affiche un message adapté au résultat de l'importation.
       setSuccess(
         importedCount > 0
           ? `${importedCount} character(s) imported successfully.`
           : "No new characters were imported. They may already be in your warband.",
       );
 
+      // Réinitialise la sélection après une réponse réussie.
       setSelectedIds([]);
+
+      // Recharge la collection pour afficher les personnages importés.
+      // On attend la fin du rafraîchissement avant de terminer cette fonction.
+      await fetchImportedCharacters();
     } catch (err) {
+      // Affiche le message d'erreur fourni par le service lorsqu'il existe.
+      // Sinon, utilise un message générique.
       setError(err.message || "Unable to import characters. Please try again.");
     } finally {
+      // Désactive toujours le chargement, même si une erreur survient.
       setImporting(false);
     }
   };
 
   return (
-    <main className="app-page">
+    <main
+      className={`app-page ${
+        isSidebarExpanded ? "sidebar-expanded" : "sidebar-collapsed"
+      }`}
+    >
+      {/* Background decor */}
       <div className="app-background" aria-hidden="true" />
 
-      <header className="app-header">
-        <a className="app-brand" href="/" aria-label="Warband HQ home">
-          <span className="brand-icon" aria-hidden="true">
-            ✦
-          </span>
-          <span>
-            <strong>
-              Warband <span>HQ</span>
-            </strong>
-            <small>YOUR ADVENTURE, ORGANIZED</small>
-          </span>
-        </a>
+      <AppHeader
+        user={user}
+        onLogout={handleLogout}
+        onLogin={handleBlizzardLogin}
+      />
 
-        {user && (
-          <button
-            className="logout-button"
-            type="button"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
-        )}
-      </header>
+      <Sidebar
+        isExpanded={isSidebarExpanded}
+        onToggle={() => setIsSidebarExpanded((previous) => !previous)}
+        activeItem={activePage}
+        onNavigate={setActivePage}
+      />
 
       <section className="app-content">
         {loading ? (
@@ -223,17 +314,6 @@ function App() {
                 characters.
               </p>
 
-              <button
-                className="blizzard-button"
-                type="button"
-                onClick={handleBlizzardLogin}
-              >
-                <span className="button-icon" aria-hidden="true">
-                  ⚔
-                </span>
-                <span>Log in with Battle.net</span>
-              </button>
-
               <p className="login-note">
                 Secure authentication powered by Blizzard
               </p>
@@ -246,134 +326,32 @@ function App() {
           </section>
         ) : (
           <>
-            <section className="welcome-section">
-              <p className="section-eyebrow">YOUR ACCOUNT</p>
-              <h1>Welcome, adventurer.</h1>
-              <p>Choose the characters you want to bring into your warband.</p>
-              <div className="account-badge">
-                <span>Battle.net account</span>
-                <strong>{user.blizzard_account_id}</strong>
-              </div>
-            </section>
+            {/* Affiche la page Overview uniquement lorsque cette page est sélectionnée. */}
+            {activePage === "overview" && (
+              <>
+                {/* Données et actions transmises à la page Overview via ses props. */}
+                <Overview
+                  user={user}
+                  characters={characters}
+                  selectedIds={selectedIds}
+                  loadingCharacters={loadingCharacters}
+                  importing={importing}
+                  onRefresh={fetchAvailableCharacters}
+                  onToggleCharacter={toggleCharacter}
+                  onSelectAll={handleSelectAll}
+                  onImport={handleImport}
+                />
+              </>
+            )}
 
-            <section className="characters-section">
-              <div className="section-heading">
-                <div>
-                  <p className="section-eyebrow">CHARACTER COLLECTION</p>
-                  <h2>Available characters</h2>
-                </div>
+            {activePage === "warband" && (
+              <MyWarband
+                importedCharacters={importedCharacters}
+                loadingImportedCharacters={loadingImportedCharacters}
+              />
+            )}
 
-                <button
-                  className="secondary-button"
-                  type="button"
-                  onClick={fetchAvailableCharacters}
-                  disabled={loadingCharacters || importing}
-                >
-                  {loadingCharacters ? "Refreshing..." : "Refresh"}
-                </button>
-              </div>
-
-              {loadingCharacters ? (
-                <div className="status-panel">
-                  <h3>Discovering your characters...</h3>
-                  <p>Contacting the Blizzard API.</p>
-                </div>
-              ) : characters.length === 0 ? (
-                <div className="status-panel">
-                  <h3>No characters found</h3>
-                  <p>
-                    No available characters were returned by Blizzard. You can
-                    try refreshing the list.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="selection-toolbar">
-                    <span>
-                      {selectedIds.length} of {characters.length} selected
-                    </span>
-                    <button
-                      className="text-button"
-                      type="button"
-                      onClick={() =>
-                        setSelectedIds(
-                          selectedIds.length === characters.length
-                            ? []
-                            : characters.map((character) => character.id),
-                        )
-                      }
-                      disabled={importing}
-                    >
-                      {selectedIds.length === characters.length
-                        ? "Deselect all"
-                        : "Select all"}
-                    </button>
-                  </div>
-
-                  <div className="character-grid">
-                    {characters.map((character) => {
-                      const selected = selectedIds.includes(character.id);
-
-                      return (
-                        <label
-                          className={`character-card${selected ? " selected" : ""}`}
-                          key={character.id}
-                        >
-                          <input
-                            className="character-checkbox"
-                            type="checkbox"
-                            checked={selected}
-                            onChange={() => toggleCharacter(character.id)}
-                            disabled={importing}
-                          />
-
-                          <div className="character-card-top">
-                            <span
-                              className="character-emblem"
-                              aria-hidden="true"
-                            >
-                              ✦
-                            </span>
-                            <span className="character-level">
-                              LVL {character.level}
-                            </span>
-                          </div>
-
-                          <h3>{character.name}</h3>
-                          <p className="character-class">
-                            {character.class}
-                            {character.race ? ` · ${character.race}` : ""}
-                          </p>
-
-                          <div className="character-meta">
-                            <span>Realm</span>
-                            <strong>{character.realm}</strong>
-                          </div>
-
-                          <div className="character-faction">
-                            {character.faction}
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-
-                  <div className="import-toolbar">
-                    <p>Select the characters you want to import.</p>
-                    <button
-                      className="blizzard-button import-button"
-                      type="button"
-                      onClick={handleImport}
-                      disabled={selectedIds.length === 0 || importing}
-                    >
-                      {importing
-                        ? "Importing..."
-                        : `Import selection (${selectedIds.length})`}
-                    </button>
-                  </div>
-                </>
-              )}
-            </section>
+            {activePage === "settings" && <Settings />}
           </>
         )}
 
