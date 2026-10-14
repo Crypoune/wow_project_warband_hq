@@ -1,3 +1,5 @@
+import httpx
+
 from sqlalchemy import select
 
 from app.core.database import SessionLocal
@@ -71,11 +73,7 @@ class CharacterService:
             for character_id in imported
         ]
 
-    def get_imported_characters(
-        self,
-        user_id: int,
-        access_token: str,
-    ) -> list[dict]:
+    def get_imported_characters(self, user_id: int, access_token: str) -> list[dict]:
         """Retourne les personnages importés par l'utilisateur."""
 
         with SessionLocal() as db:
@@ -109,9 +107,28 @@ class CharacterService:
 
         for imported in imported_data:
             blizzard_data = available_by_id.get(
-                imported["blizzard_character_id"],
-                {},
+                imported["blizzard_character_id"], {}
             )
-            result.append({**blizzard_data, **imported})
+
+            character_data = {**blizzard_data, **imported}
+
+            realm_slug = character_data.get("realm_slug")
+            character_name = character_data.get("name")
+
+            if realm_slug and character_name:
+                try:
+                    character_data["portrait_url"] = (
+                        self.auth_service.get_character_media(
+                            access_token,
+                            realm_slug,
+                            character_name,
+                        )
+                    )
+                except httpx.HTTPError:
+                    character_data["portrait_url"] = None
+            else:
+                character_data["portrait_url"] = None
+
+            result.append(character_data)
 
         return result

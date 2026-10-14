@@ -15,6 +15,8 @@ class AuthService:
 
     TOKEN_URL = "https://oauth.battle.net/token"
 
+    _character_media_cache: dict[tuple[str, str], str | None] = {}
+
     def __init__(self, settings: Settings):
         # Conserve la configuration nécessaire au service.
         self.settings = settings
@@ -144,6 +146,7 @@ class AuthService:
                 playable_class = entry.get("playable_class", {})
                 playable_race = entry.get("playable_race", {})
                 faction = entry.get("faction", {})
+                gender = entry.get("gender", {})
 
                 characters.append(
                     {
@@ -156,9 +159,61 @@ class AuthService:
                         "class_id": playable_class.get("id"),
                         "race": playable_race.get("name"),
                         "race_id": playable_race.get("id"),
+                        "gender": gender.get("type"),
                         "faction": faction.get("name"),
                         "profile_url": character.get("href"),
                     }
                 )
 
         return characters
+
+
+    def get_character_media(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+    ) -> str | None:
+        """Retrieve the avatar URL for a WoW character."""
+
+        # Check the cache first
+        cache_key = (realm_slug, character_name.lower())
+
+        if cache_key in self._character_media_cache:
+            return self._character_media_cache[cache_key]
+
+        url = (
+            f"https://{self.settings.blizzard_region}.api.blizzard.com"
+            f"/profile/wow/character/{realm_slug}/{character_name.lower()}"
+            f"/character-media"
+        )
+
+        response = httpx.get(
+            url,
+            params={
+                "namespace": f"profile-{self.settings.blizzard_region}",
+                "locale": "fr_FR",
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=10.0,
+        )
+        response.raise_for_status()
+
+        media = response.json()
+        assets = media.get("assets", [])
+
+        # Prefer the inset asset, then fall back to the avatar.
+        preferred_keys = ("inset", "avatar")
+
+        avatar_url = next(
+            (
+                asset.get("value")
+                for key in preferred_keys
+                for asset in assets
+                if asset.get("key") == key and asset.get("value")
+            ),
+            None,
+        )
+
+        self._character_media_cache[cache_key] = avatar_url
+        return avatar_url
