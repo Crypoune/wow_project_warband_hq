@@ -24,6 +24,24 @@ The project aims to provide a clear overview of a player's WoW account and its c
 - Retrieve the characters already imported by the authenticated user.
 - Preserve the association between users and their imported characters.
 
+### Character Overview — US-03
+
+- Display imported characters in a centralized collection.
+- Present character portraits and visual references for classes, races, and factions.
+- Display key character information, including media, name, level, class, race, gender, realm, and faction.
+- Switch between grid and list display modes.
+
+### Error Handling — US-05
+
+- Handle invalid or unavailable Blizzard profile data.
+- Return appropriate API errors when character information cannot be retrieved.
+
+### Character Filtering and Sorting — US-07
+
+- Search characters by name, race, class, or realm.
+- Filter characters by class and faction.
+- Sort characters by name, level, or realm.
+
 ### Planned Features
 
 - Character overview and progression tracking.
@@ -37,7 +55,8 @@ The project aims to provide a clear overview of a player's WoW account and its c
 - React
 - Vite
 - JavaScript
-- CSS
+- Sass (SCSS)
+- Lucide React
 
 ### Backend
 
@@ -46,6 +65,7 @@ The project aims to provide a clear overview of a player's WoW account and its c
 - SQLAlchemy
 - PostgreSQL
 - Alembic
+- httpx
 
 ### External API
 
@@ -203,7 +223,7 @@ alembic current
 
 ## Running Tests
 
-From the backend directory, with the virtual environment activated:
+From the `backend` directory, with the virtual environment activated:
 
 ```bash
 python -m pytest -v
@@ -211,13 +231,22 @@ python -m pytest -v
 
 The automated backend test suite covers authentication, health checks, character retrieval, character imports, and relevant error cases.
 
+For the frontend, run the following commands from the `frontend` directory:
+
+```bash
+npm run lint
+npm run build
+```
+
 ## Project Status
 
 Warband HQ is being developed incrementally using Agile sprints and user stories.
 
 - **US-01 — Blizzard Authentication:** implementation and frontend integration completed; automated tests passed.
 - **US-02 — Character Retrieval:** backend endpoints, database model and migration, frontend character selection, and import workflow implemented; local functional verification completed.
-- **US-03 — Character Overview:** planned.
+- **US-03 — Character Overview:** completed; imported characters are displayed in grid and list views.
+- **US-05 — Error Handling:** completed; invalid or unavailable Blizzard profile data is mapped to appropriate API errors.
+- **US-07 — Character Filtering and Sorting:** completed; search, class and faction filters, sorting.
 
 ## License
 
