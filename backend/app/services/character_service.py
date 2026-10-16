@@ -73,6 +73,34 @@ class CharacterService:
             for character_id in imported
         ]
 
+    def update_favorite(
+        self,
+        user_id: int,
+        character_id: int,
+        is_favorite: bool,
+    ) -> dict | None:
+        """Met à jour le statut favori d'un personnage appartenant à l'utilisateur."""
+
+        with SessionLocal() as db:
+            character = db.scalar(
+                select(Character).where(
+                    Character.id == character_id,
+                    Character.user_id == user_id,
+                )
+            )
+
+            if character is None:
+                return None
+
+            character.is_favorite = is_favorite
+            db.commit()
+            db.refresh(character)
+
+            return {
+                "id": character.id,
+                "is_favorite": character.is_favorite,
+            }
+
     def get_imported_characters(self, user_id: int, access_token: str) -> list[dict]:
         """Retourne les personnages importés par l'utilisateur."""
 

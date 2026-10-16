@@ -137,3 +137,52 @@ def test_get_imported_characters_handles_missing_blizzard_character(service):
     assert result[0]["id"] == 1
     assert result[0]["blizzard_character_id"] == 999
     assert result[0]["is_favorite"] is False
+
+
+@pytest.mark.parametrize("favorite_state", [True, False])
+def test_update_favorite_updates_character(service, favorite_state):
+    character = SimpleNamespace(
+        id=1,
+        is_favorite=not favorite_state,
+    )
+
+    db = MagicMock()
+    db.scalar.return_value = character
+
+    with patch(
+        "app.services.character_service.SessionLocal"
+    ) as mock_session_local:
+        mock_session_local.return_value.__enter__.return_value = db
+
+        result = service.update_favorite(
+            user_id=42,
+            character_id=1,
+            is_favorite=favorite_state,
+        )
+
+    assert result == {
+        "id": 1,
+        "is_favorite": favorite_state,
+    }
+    assert character.is_favorite is favorite_state
+    db.commit.assert_called_once()
+    db.refresh.assert_called_once_with(character)
+
+def test_update_favorite_returns_none_when_character_not_found(service):
+    db = MagicMock()
+    db.scalar.return_value = None
+
+    with patch(
+        "app.services.character_service.SessionLocal"
+    ) as mock_session_local:
+        mock_session_local.return_value.__enter__.return_value = db
+
+        result = service.update_favorite(
+            user_id=42,
+            character_id=999,
+            is_favorite=True,
+        )
+
+    assert result is None
+    db.commit.assert_not_called()
+    db.refresh.assert_not_called()

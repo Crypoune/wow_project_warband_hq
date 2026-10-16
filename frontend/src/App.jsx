@@ -16,6 +16,7 @@ import {
   getAvailableCharacters,
   getImportedCharacters,
   importCharacters,
+  updateCharacterFavorite,
 } from "./services/characterService.js";
 
 function App() {
@@ -84,6 +85,30 @@ function App() {
       setLoadingImportedCharacters(false);
     }
   }, []);
+
+  // Met à jour le statut favori d'un personnage.
+  const handleToggleFavorite = async (characterId, isFavorite) => {
+    setError("");
+
+    try {
+      const updatedCharacter = await updateCharacterFavorite(
+        characterId,
+        isFavorite,
+      );
+
+      setImportedCharacters((currentCharacters) =>
+        currentCharacters.map((character) =>
+          character.id === updatedCharacter.id
+            ? { ...character, ...updatedCharacter }
+            : character,
+        ),
+      );
+    } catch (err) {
+      setError(
+        err.message || "Unable to update character favorite. Please try again.",
+      );
+    }
+  };
 
   // Vérifie si l'utilisateur possède déjà une session valide.
   useEffect(() => {
@@ -348,6 +373,7 @@ function App() {
               <MyWarband
                 importedCharacters={importedCharacters}
                 loadingImportedCharacters={loadingImportedCharacters}
+                onToggleFavorite={handleToggleFavorite}
               />
             )}
 

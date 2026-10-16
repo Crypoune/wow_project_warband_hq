@@ -487,6 +487,103 @@
 }
 
 // ========================================
+// CHARACTER FAVORITES
+// ========================================
+
+.favorite-button {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #aab4c6;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    color: #f3d78e;
+    transform: scale(1.1);
+  }
+
+  &.is-favorite {
+    color: #f3d78e;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f3d78e;
+    outline-offset: 2px;
+  }
+}
+
+.character-portrait {
+  .favorite-button {
+    position: absolute;
+    z-index: 3;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+.character-filters .filter-field.favorite-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-self: start;
+  gap: 8px;
+
+  label {
+    display: contents;
+  }
+
+  input[type="checkbox"] {
+    display: block;
+    position: static;
+    width: 16px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    accent-color: #d7aa50;
+  }
+}
+
+.character-row-content {
+  grid-template-columns: 44px 100px minmax(0, 1fr) 44px minmax(120px, 160px);
+
+  .favorite-button {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .character-row-icons {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .character-row-name {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .character-row-level {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .character-row-realm {
+    grid-column: 5;
+    grid-row: 1;
+  }
+}
+
+// ========================================
 // RESPONSIVE
 // ========================================
 
@@ -503,14 +600,34 @@
   }
 
   .character-row-content {
-    grid-template-columns: 100px minmax(0, 1fr) 36px;
+    grid-template-columns: 44px 100px minmax(0, 1fr) 36px;
     gap: 8px;
     padding: 8px;
-  }
 
-  .character-row-realm {
-    grid-column: 2 / -1;
-    margin-top: -4px;
+    .favorite-button {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .character-row-icons {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .character-row-name {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .character-row-level {
+      grid-column: 4;
+      grid-row: 1;
+    }
+
+    .character-row-realm {
+      grid-column: 2 / -1;
+      margin-top: -4px;
+    }
   }
 }
 
@@ -520,32 +637,44 @@
   }
 
   .character-row-content {
-    grid-template-columns: 88px minmax(0, 1fr) 32px;
+    grid-template-columns: 32px 88px minmax(0, 1fr) 32px;
     gap: 6px;
     padding: 8px 6px;
-  }
 
-  .character-row-icons {
-    width: 88px;
-    gap: 3px;
-  }
+    .favorite-button {
+      grid-column: 1;
+      grid-row: 1;
+    }
 
-  .character-row-icon,
-  .character-race-icon-placeholder {
-    width: 25px;
-    height: 25px;
-  }
+    .character-row-icons {
+      grid-column: 2;
+      grid-row: 1;
+      width: 88px;
+      gap: 3px;
+    }
 
-  .character-row-name {
-    font-size: 14px;
-  }
+    .character-row-name {
+      grid-column: 3;
+      grid-row: 1;
+      font-size: 14px;
+    }
 
-  .character-row-level {
-    font-size: 12px;
-  }
+    .character-row-level {
+      grid-column: 4;
+      grid-row: 1;
+      font-size: 12px;
+    }
 
-  .character-row-realm {
-    grid-column: 2 / -1;
-    font-size: 12px;
+    .character-row-realm {
+      grid-column: 2 / -1;
+      margin-top: -4px;
+      font-size: 12px;
+    }
+
+    .character-row-icon,
+    .character-race-icon-placeholder {
+      width: 25px;
+      height: 25px;
+    }
   }
 }
