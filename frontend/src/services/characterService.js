@@ -93,3 +93,35 @@ export async function getImportedCharacters() {
   // Garantit que la fonction renvoie toujours un tableau de personnages.
   return data.characters ?? [];
 }
+
+/*
+ * Met à jour le statut favori d'un personnage importé.
+ *
+ * characterId correspond à l'identifiant interne de Warband HQ.
+ * isFavorite indique si le personnage doit être favori ou non.
+ */
+export async function updateCharacterFavorite(characterId, isFavorite) {
+  const response = await fetch(
+    `${API_URL}/api/characters/${characterId}/favorite`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        is_favorite: isFavorite,
+      }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail?.message || "Unable to update character favorite.",
+    );
+  }
+
+  return data.character;
+}

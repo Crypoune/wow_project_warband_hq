@@ -11,14 +11,48 @@ import {
   SlidersHorizontal,
   LayoutGrid,
   List,
+  Star,
 } from "lucide-react";
 
-function MyWarband({ importedCharacters, loadingImportedCharacters }) {
+function FavoriteButton({ character, onToggleFavorite }) {
+  const isFavorite = Boolean(character.is_favorite);
+
+  return (
+    <button
+      type="button"
+      className={`favorite-button ${isFavorite ? "is-favorite" : ""}`}
+      onClick={() => onToggleFavorite(character.id, !isFavorite)}
+      aria-label={
+        isFavorite
+          ? `Remove ${character.name} from favorites`
+          : `Add ${character.name} to favorites`
+      }
+      aria-pressed={isFavorite}
+      title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+    >
+      <Star
+        size={20}
+        fill={isFavorite ? "currentColor" : "none"}
+        strokeWidth={1.8}
+        aria-hidden="true"
+      />
+    </button>
+  );
+}
+
+function MyWarband({
+  importedCharacters,
+  loadingImportedCharacters,
+  onToggleFavorite,
+}) {
   // Mode d'affichage de la collection : cartes ou liste.
   const [viewMode, setViewMode] = useState("grid");
 
   // Contrôle l'ouverture du panneau de recherche et de filtres.
   const [showFilters, setShowFilters] = useState(false);
+
+  // Indique si seuls les personnages favoris doivent être affichés.
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   // Texte utilisé pour rechercher un personnage.
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,7 +98,9 @@ function MyWarband({ importedCharacters, loadingImportedCharacters }) {
       const matchesFaction =
         selectedFaction === "all" || character.faction === selectedFaction;
 
-      return matchesSearch && matchesClass && matchesFaction;
+      const matchesFavorite = !favoritesOnly || character.is_favorite === true;
+
+      return matchesSearch && matchesClass && matchesFaction && matchesFavorite;
     });
 
     // Trie une nouvelle copie pour ne pas modifier le tableau original.
@@ -87,7 +123,14 @@ function MyWarband({ importedCharacters, loadingImportedCharacters }) {
           return (a.name ?? "").localeCompare(b.name ?? "");
       }
     });
-  }, [importedCharacters, searchTerm, selectedClass, selectedFaction, sortBy]);
+  }, [
+    importedCharacters,
+    searchTerm,
+    selectedClass,
+    selectedFaction,
+    sortBy,
+    favoritesOnly,
+  ]);
 
   // Réinitialise les critères de recherche et de filtrage.
   const resetFilters = () => {
@@ -95,6 +138,7 @@ function MyWarband({ importedCharacters, loadingImportedCharacters }) {
     setSelectedClass("all");
     setSelectedFaction("all");
     setSortBy("name-asc");
+    setFavoritesOnly(false);
   };
 
   return (
@@ -230,6 +274,18 @@ function MyWarband({ importedCharacters, loadingImportedCharacters }) {
           </select>
         </div>
 
+        <div className="filter-field favorite-filter">
+          <label htmlFor="favorites-only">
+            <span>Show favorites only</span>
+            <input
+              id="favorites-only"
+              type="checkbox"
+              checked={favoritesOnly}
+              onChange={(event) => setFavoritesOnly(event.target.checked)}
+            />
+          </label>
+        </div>
+
         <div className="filter-field">
           <label htmlFor="character-sort">Sort by</label>
           <select
@@ -301,6 +357,10 @@ function MyWarband({ importedCharacters, loadingImportedCharacters }) {
                 {viewMode === "grid" ? (
                   <>
                     <div className="character-portrait">
+                      <FavoriteButton
+                        character={character}
+                        onToggleFavorite={onToggleFavorite}
+                      />
                       {character.portrait_url ? (
                         <img
                           src={character.portrait_url}
@@ -356,6 +416,10 @@ function MyWarband({ importedCharacters, loadingImportedCharacters }) {
                   </>
                 ) : (
                   <div className="character-row-content">
+                    <FavoriteButton
+                      character={character}
+                      onToggleFavorite={onToggleFavorite}
+                    />
                     <div className="character-row-icons">
                       {factionIcon && (
                         <img

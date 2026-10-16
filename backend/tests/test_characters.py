@@ -447,3 +447,69 @@ def test_import_characters_invalid_blizzard_profile_returns_502():
     assert response.json()["message"] == (
         "Blizzard returned an unexpected response"
     )
+
+@pytest.mark.parametrize("favorite_state", [True, False])
+def test_update_character_favorite_success(favorite_state):
+    character = {
+        "id": 1,
+        "is_favorite": favorite_state,
+    }
+
+    with patch(
+        "app.api.characters.character_service.update_favorite",
+        return_value=character,
+    ) as mock_service:
+        response = client.patch(
+            "/api/characters/1/favorite",
+            json={"is_favorite": favorite_state},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {"character": character}
+    mock_service.assert_called_once_with(
+        user_id=1,
+        character_id=1,
+        is_favorite=favorite_state,
+    )
+
+
+def test_update_character_favorite_not_found():
+    with patch(
+        "app.api.characters.character_service.update_favorite",
+        return_value=None,
+    ):
+        response = client.patch(
+            "/api/characters/999/favorite",
+            json={"is_favorite": True},
+        )
+
+    assert response.status_code == 404
+    assert response.json()["message"] == "Character not found"
+
+
+def test_update_character_favorite_database_error():
+    with patch(
+        "app.api.characters.character_service.update_favorite",
+        side_effect=SQLAlchemyError("Database unavailable"),
+    ):
+        response = client.patch(
+            "/api/characters/1/favorite",
+            json={"is_favorite": True},
+        )
+
+    assert response.status_code == 500
+    assert response.json()["message"] == (
+        "Unable to update character favorite"
+    )
+
+
+def test_update_character_favorite_requires_authentication():
+    app.dependency_overrides.clear()
+
+    response = client.patch(
+        "/api/characters/1/favorite",
+        json={"is_favorite": True},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["message"] == "Authentication required"
