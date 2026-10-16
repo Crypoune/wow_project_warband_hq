@@ -42,6 +42,13 @@ The project aims to provide a clear overview of a player's WoW account and its c
 - Filter characters by class and faction.
 - Sort characters by name, level, or realm.
 
+### Character Favorites — US-08
+
+- Mark characters as favorites and remove them from favorites.
+- Persist favorite status through the backend API and database.
+- Filter the character collection to display favorites only.
+- Support favorite management in both grid and list views.
+
 ### Planned Features
 
 - Character overview and progression tracking.
@@ -246,7 +253,8 @@ Warband HQ is being developed incrementally using Agile sprints and user stories
 - **US-02 — Character Retrieval:** backend endpoints, database model and migration, frontend character selection, and import workflow implemented; local functional verification completed.
 - **US-03 — Character Overview:** completed; imported characters are displayed in grid and list views.
 - **US-05 — Error Handling:** completed; invalid or unavailable Blizzard profile data is mapped to appropriate API errors.
-- **US-07 — Character Filtering and Sorting:** completed; search, class and faction filters, sorting.
+- **US-07 — Character Filtering and Sorting:** completed; character search, class and faction filters, and sorting by name, level, or realm.
+- **US-08 — Character Favorites:** completed; favorite management, persistent storage, and favorites-only filtering in grid and list views.
 
 ## License
 
