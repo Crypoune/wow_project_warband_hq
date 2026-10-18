@@ -17,6 +17,13 @@ import {
   getImportedCharacters,
   importCharacters,
   updateCharacterFavorite,
+  getCharacterTags,
+  assignCharacterTag,
+  removeCharacterTag,
+  getTags,
+  createTag,
+  updateTag,
+  deleteTag,
 } from "./services/characterService.js";
 
 function App() {
@@ -374,10 +381,14 @@ function App() {
                 importedCharacters={importedCharacters}
                 loadingImportedCharacters={loadingImportedCharacters}
                 onToggleFavorite={handleToggleFavorite}
+                getCharacterTags={getCharacterTags}
+                assignCharacterTag={assignCharacterTag}
+                removeCharacterTag={removeCharacterTag}
+                getTags={getTags}
               />
             )}
 
-            {activePage === "settings" && <Settings />}
+            {activePage === "settings" && <Settings user={user} />}
           </>
         )}
 

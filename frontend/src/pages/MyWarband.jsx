@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Importation des icônes de factions.
 import { CLASS_ICONS, CLASS_COLORS } from "../data/wowClasses";
@@ -40,10 +40,137 @@ function FavoriteButton({ character, onToggleFavorite }) {
   );
 }
 
+function CharacterTagManager({
+  character,
+  getCharacterTags,
+  assignCharacterTag,
+  removeCharacterTag,
+  tags,
+  onError,
+}) {
+  const [characterTags, setCharacterTags] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTag, setSelectedTag] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTags() {
+      setLoading(true);
+
+      try {
+        const result = await getCharacterTags(character.id);
+        if (!cancelled) setCharacterTags(result);
+      } catch (error) {
+        if (!cancelled) onError(error.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadTags();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [character.id, getCharacterTags, onError]);
+
+  const assignedIds = new Set(characterTags.map((tag) => tag.id));
+
+  const availableTags = tags.filter((tag) => !assignedIds.has(tag.id));
+
+  async function handleAssign() {
+    if (!selectedTag) return;
+
+    setSaving(true);
+
+    try {
+      await assignCharacterTag(character.id, Number(selectedTag));
+
+      const updatedTags = await getCharacterTags(character.id);
+      setCharacterTags(updatedTags);
+      setSelectedTag("");
+    } catch (error) {
+      onError(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRemove(tagId) {
+    setSaving(true);
+
+    try {
+      await removeCharacterTag(character.id, tagId);
+      setCharacterTags((current) => current.filter((tag) => tag.id !== tagId));
+    } catch (error) {
+      onError(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="character-tags">
+      <div className="character-tags-list">
+        {loading ? (
+          <span>Loading tags...</span>
+        ) : characterTags.length > 0 ? (
+          characterTags.map((tag) => (
+            <span className="character-tag" key={tag.id}>
+              {tag.name}
+              <button
+                type="button"
+                onClick={() => handleRemove(tag.id)}
+                disabled={saving}
+                aria-label={`Remove tag ${tag.name}`}
+                title={`Remove ${tag.name}`}
+              >
+                ×
+              </button>
+            </span>
+          ))
+        ) : (
+          <span className="character-tags-empty">No tags</span>
+        )}
+      </div>
+
+      <div className="character-tags-actions">
+        <select
+          aria-label={`Choose a tag for ${character.name}`}
+          value={selectedTag}
+          onChange={(event) => setSelectedTag(event.target.value)}
+          disabled={loading || saving || availableTags.length === 0}
+        >
+          <option value="">Choose a tag</option>
+          {availableTags.map((tag) => (
+            <option key={tag.id} value={tag.id}>
+              {tag.name}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          onClick={handleAssign}
+          disabled={!selectedTag || saving}
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MyWarband({
   importedCharacters,
   loadingImportedCharacters,
   onToggleFavorite,
+  getCharacterTags,
+  assignCharacterTag,
+  removeCharacterTag,
+  getTags,
 }) {
   // Mode d'affichage de la collection : cartes ou liste.
   const [viewMode, setViewMode] = useState("grid");
@@ -65,6 +192,81 @@ function MyWarband({
 
   // Critère et sens du tri.
   const [sortBy, setSortBy] = useState("name-asc");
+
+  const [tags, setTags] = useState([]);
+  const [tagError, setTagError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getTags()
+      .then((result) => {
+        if (!cancelled) setTags(result);
+      })
+      .catch((error) => {
+        if (!cancelled) setTagError(error.message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [getTags]);
+
+  const handleTagError = (message) => {
+    setTagError(message);
+  };
+
+  const handleUpdateTag = async (tagId) => {
+    const name = editingTagName.trim();
+
+    if (!name || savingTag) return;
+
+    setTagError("");
+    setTagMessage("");
+    setSavingTag(true);
+
+    try {
+      const updatedTag = await updateTag(tagId, name);
+
+      setTags((current) =>
+        current.map((tag) => (tag.id === tagId ? updatedTag : tag)),
+      );
+
+      setEditingTagId(null);
+      setEditingTagName("");
+      setTagMessage(`Tag "${updatedTag.name}" updated.`);
+    } catch (error) {
+      setTagError(error.message);
+    } finally {
+      setSavingTag(false);
+    }
+  };
+
+  const handleDeleteTag = async (tag) => {
+    if (savingTag) return;
+
+    const confirmed = window.confirm(
+      `Delete the tag "${tag.name}"? It will also be removed from assigned characters.`,
+    );
+
+    if (!confirmed) return;
+
+    setTagError("");
+    setTagMessage("");
+    setSavingTag(true);
+
+    try {
+      await deleteTag(tag.id);
+
+      setTags((current) => current.filter((item) => item.id !== tag.id));
+
+      setTagMessage(`Tag "${tag.name}" deleted.`);
+    } catch (error) {
+      setTagError(error.message);
+    } finally {
+      setSavingTag(false);
+    }
+  };
 
   // Construit la liste des classes disponibles à partir des personnages importés.
   const availableClasses = useMemo(() => {
@@ -475,6 +677,14 @@ function MyWarband({
                     </span>
                   </div>
                 )}
+                <CharacterTagManager
+                  character={character}
+                  getCharacterTags={getCharacterTags}
+                  assignCharacterTag={assignCharacterTag}
+                  removeCharacterTag={removeCharacterTag}
+                  tags={tags}
+                  onError={handleTagError}
+                />
               </article>
             );
           })}

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from dataclasses import dataclass
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -63,6 +63,21 @@ def get_current_user(request: Request) -> User:
             status_code=500,
             detail={"message": "Unable to verify authentication"},
         )
+
+
+def get_current_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Vérifie que l'utilisateur connecté possède le rôle ADMIN."""
+
+    if current_user.role != "ADMIN":
+        raise HTTPException(
+            status_code=403,
+            detail={"message": "Administrator privileges required"},
+        )
+
+    return current_user
+
 
 @dataclass
 class CurrentAuth:
