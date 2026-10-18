@@ -9,6 +9,7 @@ from app.core.database import Base
 from app.models.user import User
 from app.models.character import Character
 from app.models.authentication_session import AuthenticationSession
+from app.models.tag import Tag, CharacterTag
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

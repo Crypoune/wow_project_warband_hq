@@ -8,11 +8,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.core.dependencies import CurrentAuth, get_current_auth
 from app.services.auth_service import InvalidBlizzardProfileError
 from app.services.character_service import CharacterService
+from app.services.tag_service import TagService
 
 
 router = APIRouter(prefix="/api/characters", tags=["characters"])
 character_service = CharacterService()
-
+tag_service = TagService()
 
 class CharacterImportRequest(BaseModel):
     """Données nécessaires pour importer des personnages."""
@@ -197,4 +198,97 @@ def update_character_favorite(
         raise HTTPException(
             status_code=500,
             detail={"message": "Unable to update character favorite"},
+        )
+
+@router.get("/{character_id}/tags")
+def get_character_tags(
+    character_id: int,
+    current_auth: CurrentAuth = Depends(get_current_auth),
+):
+    try:
+        return {
+            "tags": tag_service.get_character_tags(
+                user_id=current_auth.user_id,
+                character_id=character_id,
+            )
+        }
+    except ValueError as exc:
+        status_code = (
+            404 if str(exc) in {
+                "Personnage introuvable.",
+                "Tag introuvable.",
+            }
+            else 400
+        )
+        raise HTTPException(
+            status_code=status_code,
+            detail={"message": str(exc)},
+        ) from exc
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail={"message": "Unable to retrieve character tags"},
+        )
+
+
+@router.post("/{character_id}/tags/{tag_id}")
+def assign_character_tag(
+    character_id: int,
+    tag_id: int,
+    current_auth: CurrentAuth = Depends(get_current_auth),
+):
+    try:
+        tag_service.assign_tag(
+            user_id=current_auth.user_id,
+            character_id=character_id,
+            tag_id=tag_id,
+        )
+        return {"message": "Tag assigned successfully"}
+    except ValueError as exc:
+        status_code = (
+            404 if str(exc) in {
+                "Personnage introuvable.",
+                "Tag introuvable.",
+            }
+            else 400
+        )
+        raise HTTPException(
+            status_code=status_code,
+            detail={"message": str(exc)},
+        ) from exc
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail={"message": "Unable to assign tag"},
+        )
+
+@router.delete("/{character_id}/tags/{tag_id}")
+def remove_character_tag(
+    character_id: int,
+    tag_id: int,
+    current_auth: CurrentAuth = Depends(get_current_auth),
+):
+    try:
+        tag_service.remove_tag(
+            user_id=current_auth.user_id,
+            character_id=character_id,
+            tag_id=tag_id,
+        )
+        return {"message": "Tag removed successfully"}
+    except ValueError as exc:
+        status_code = (
+            404 if str(exc) in {
+                "Personnage introuvable.",
+                "Tag introuvable.",
+            }
+            else 400
+        )
+        raise HTTPException(
+            status_code=status_code,
+            detail={"message": str(exc)},
+        ) from exc
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=500,
+            detail={"message": "Unable to remove tag"},
         )
