@@ -14,13 +14,13 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     blizzard_account_id: Mapped[str] = mapped_column(
-        String,
+        String(24),
         unique=True,
         nullable=False,
     )
 
     role: Mapped[str] = mapped_column(
-        String,
+        String(8),
         nullable=False,
         default="USER",
     )

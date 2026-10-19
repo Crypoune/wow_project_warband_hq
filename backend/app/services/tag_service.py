@@ -33,7 +33,7 @@ class TagService:
 
                 print(
                     "[TagService.create_tag] "
-                    f"Erreur PostgreSQL : {exc.orig}"
+                    f"Erreur de base de données : {exc.orig}"
                 )
 
                 raise ValueError(

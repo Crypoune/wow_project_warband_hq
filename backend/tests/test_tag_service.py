@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects import mysql
 from sqlalchemy.exc import IntegrityError
 
 from app.models.tag import Tag, CharacterTag
@@ -94,7 +94,10 @@ def test_create_tag_rejects_duplicate_name(service):
     with patch("app.services.tag_service.SessionLocal") as session_local:
         session_local.return_value.__enter__.return_value = db
 
-        with pytest.raises(ValueError, match="existe déjà"):
+        with pytest.raises(
+            ValueError,
+            match="Impossible de créer le tag",
+        ):
             service.create_tag(name="Raid")
 
     db.rollback.assert_called_once()
@@ -285,7 +288,7 @@ def test_get_character_tags_success(service):
     ]
 
     statement = db.scalars.call_args.args[0]
-    compiled = statement.compile(dialect=postgresql.dialect())
+    compiled = statement.compile(dialect=mysql.dialect())
 
     assert "character_tags.character_id" in str(compiled)
 
