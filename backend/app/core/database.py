@@ -12,7 +12,7 @@ class Base(DeclarativeBase):
 
 engine = create_engine(settings.database_url)
 
-# Fabrique les sessions SQLAlchemy utilisées pour accéder à PostgreSQL.
+# Fabrique les sessions SQLAlchemy utilisées pour accéder à MySQL.
 SessionLocal = sessionmaker(
     bind=engine,
     expire_on_commit=False,

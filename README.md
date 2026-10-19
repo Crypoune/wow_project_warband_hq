@@ -1,65 +1,71 @@
 # Warband HQ
 
-**Warband HQ** is a World of Warcraft character tracking application designed to centralize player and character information through the Blizzard Battle.net API.
+Warband HQ is a World of Warcraft character-tracking application that
+centralizes player and character information using the Blizzard
+Battle.net API.
 
-The project aims to provide a clear overview of a player's WoW account and its characters through a dedicated web interface.
+The project combines a React frontend with a FastAPI backend. It is
+developed incrementally through Agile sprints and user stories.
 
 ## Features
 
-### Authentication — US-01
+### Authentication --- US-01
 
-- Authentication through Blizzard OAuth 2.0.
-- Server-side session management.
-- Retrieval of the authenticated Blizzard account profile.
-- Logout functionality.
-- Integration between the React frontend and the FastAPI backend.
+- Authenticate users through Blizzard OAuth 2.0.
+- Manage authentication sessions on the backend.
+- Retrieve the authenticated Blizzard account profile.
+- Support logout.
+- Integrate the React frontend with the FastAPI backend.
 
-### Character Retrieval — US-02
+### Character Retrieval --- US-02
 
-- Retrieve characters associated with the authenticated Blizzard account.
-- Display available characters in the web interface.
-- Select characters for import into Warband HQ.
-- Store imported characters in PostgreSQL.
-- Prevent duplicate character imports for the same user.
-- Retrieve characters already imported by the authenticated user.
-- Preserve the association between users and their imported characters.
+- Retrieve characters associated with the authenticated Blizzard
+  account.
+- Display available characters and import selected characters into
+  Warband HQ.
+- Store imported characters in MySQL.
+- Prevent duplicate imports for the same user.
+- Retrieve the authenticated user's imported characters.
 
-### Character Overview — US-03
+### Character Overview --- US-03
 
 - Display imported characters in a centralized collection.
-- Present character portraits and visual references for classes, races, and factions.
-- Display key character information, including media, name, level, class, race, gender, realm, and faction.
-- Switch between grid and list display modes.
+- Show character portraits and visual references for classes, races,
+  and factions.
+- Display character media, name, level, class, race, gender, realm,
+  and faction.
+- Switch between grid and list views.
 
-### Error Handling — US-05
+### Error Handling --- US-05
 
 - Handle invalid or unavailable Blizzard profile data.
-- Return appropriate API errors when character information cannot be retrieved.
+- Return appropriate API errors when character information cannot be
+  retrieved.
 
-### Character Filtering and Sorting — US-07
+### Character Filtering and Sorting --- US-07
 
-- Search characters by name, race, class, or realm.
-- Filter characters by class and faction.
-- Sort characters by name, level, or realm.
+- Search by character name, race, class, or realm.
+- Filter by class and faction.
+- Sort by name, level, or realm.
 
-### Character Favorites — US-08
+### Character Favorites --- US-08
 
 - Mark characters as favorites and remove them from favorites.
-- Persist favorite status through the backend API and database.
-- Filter the character collection to display favorites only.
-- Support favorite management in both grid and list views.
+- Persist favorite status through the backend and database.
+- Filter the collection to show favorites only.
+- Manage favorites in grid and list views.
 
-### Global Character Tag Management — US-09
+### Global Character Tag Management --- US-09
 
 - Manage tags associated with characters.
-- Organize the character collection using a shared tagging system.
-- Persist tag information through the backend and database.
+- Organize the collection with a shared tag catalogue.
+- Persist tags and character-tag associations in the database.
 
 ### Planned Features
 
 - Character progression tracking.
 - Character details and synchronization with Blizzard.
-- Additional character tracking features as the project evolves.
+- Additional character-tracking features as the project evolves.
 
 ## Tech Stack
 
@@ -76,14 +82,15 @@ The project aims to provide a clear overview of a player's WoW account and its c
 - Python
 - FastAPI
 - SQLAlchemy
-- PostgreSQL
-- Alembic
+- MySQL
+- PyMySQL
 - HTTPX
+- Pydantic Settings
 
 ### External API
 
 - Blizzard Battle.net API
-- OAuth 2.0 authentication
+- OAuth 2.0
 - WoW Account Profile API
 
 ### Testing and Quality
@@ -96,119 +103,109 @@ The project aims to provide a clear overview of a player's WoW account and its c
 
 ## Project Structure
 
-The following is the project's general structure. Update this section whenever the repository structure changes.
+The following is a high-level overview. Update it when the repository
+structure changes.
 
 ```text
 wow_project_warband_hq/
 ├── backend/
-│   ├── alembic/
-│   │   └── versions/
 │   ├── app/
 │   │   ├── api/
 │   │   ├── core/
 │   │   ├── models/
 │   │   └── services/
+│   ├── database/
+│   │   ├── schema.sql
+│   │   └── setup.sql
 │   ├── tests/
-│   ├── alembic.ini
 │   ├── requirements.txt
 │   └── .env.example
-├── docs/
-│   └── database/
-│       └── setup.sql
 ├── frontend/
 │   └── src/
+├── docs/
 ├── .gitignore
 └── README.md
 ```
 
 ## Local Development
 
-Warband HQ can be developed on Windows or macOS.
+Warband HQ can be developed on Windows or macOS. The database
+instructions below use MySQL; on the project's macOS development setup,
+MySQL is provided by MAMP.
 
 ### Prerequisites
 
-Install the following software before starting:
+Install or configure: - Git - Python compatible with the pinned backend
+dependencies - Node.js and npm - MySQL - A Blizzard Developer Portal
+application with OAuth credentials
 
-- **Git** — to clone and manage the repository.
-- **Python** — a version compatible with the backend dependencies.
-- **Node.js and npm** — for the React frontend.
-- **PostgreSQL** — for persistent application data.
-- **Blizzard Developer Portal application** — to obtain OAuth credentials.
+Official resources: - [Git](https://git-scm.com/downloads) -
+[Python](https://www.python.org/downloads/) -
+[Node.js](https://nodejs.org/) -
+[MySQL](https://dev.mysql.com/downloads/) - [Blizzard Developer
+Portal](https://develop.battle.net/)
 
-Useful official resources:
-
-- Git: https://git-scm.com/downloads
-- Python: https://www.python.org/downloads/
-- Node.js: https://nodejs.org/
-- PostgreSQL: https://www.postgresql.org/download/
-- Blizzard Developer Portal: https://develop.battle.net/
-
-Check that the required commands are available in your terminal:
+Check that the required commands are available:
 
 ```bash
 git --version
-python --version
+python3 --version
 node --version
 npm --version
 ```
 
-On macOS, use `python3 --version` if `python` is not available.
-
 ### 1. Clone the Repository
-
-Open a terminal and run:
 
 ```bash
 git clone https://github.com/Crypoune/wow_project_warband_hq.git
 cd wow_project_warband_hq
 ```
 
-### 2. Configure PostgreSQL
+### 2. Configure MySQL
 
-PostgreSQL must be installed and running before the backend can connect to the database.
+Start MySQL. On the macOS MAMP setup, the MySQL port is `8889`; the
+default port for many standalone MySQL installations is `3306`. Use the
+host and port configured by your local installation.
 
-Create a dedicated application role and database using a PostgreSQL administrator account.
+Create two databases: - `warband_hq` for local application
+development. - `warband_hq_test` exclusively for automated tests.
 
-Example SQL:
+Use a dedicated database account for the application rather than the
+MySQL administrator account. Grant that account only the permissions
+required by the project on these two databases.
 
-```sql
-CREATE ROLE warband_hq_user
-WITH LOGIN PASSWORD 'REPLACE_WITH_A_STRONG_PASSWORD';
+The repository includes SQL scripts in `backend/database/`: -
+`setup.sql` contains database setup SQL. - `schema.sql` defines the
+application tables and related database objects.
 
-CREATE DATABASE warband_hq
-OWNER warband_hq_user;
-```
-
-Replace the example password with a strong password of your own.
-
-The default PostgreSQL port is `5432`. If your local installation uses another port, use that port in the database connection string.
-
-Do not expose PostgreSQL directly to the public internet for local development.
+Review the scripts before executing them. Use phpMyAdmin or a MySQL
+client to run the setup and create the schema in **both** `warband_hq`
+and `warband_hq_test`. Do not point automated tests at the development
+database.
 
 ### 3. Configure Environment Variables
 
-The backend uses environment variables to configure its database connection, Blizzard credentials, and session security.
+Create a local environment file from the example.
 
-Create a local environment file from the example provided by the project.
+From the repository root:
 
-**Windows PowerShell**, from the repository root:
+**Windows PowerShell**
 
 ```powershell
 Copy-Item backend/.env.example backend/.env
 ```
 
-**macOS Terminal**, from the repository root:
+**macOS Terminal**
 
 ```bash
 cp backend/.env.example backend/.env
 ```
 
-Edit `backend/.env` and replace the example values with your own configuration.
-
-Example:
+Edit `backend/.env` and provide your own values. The database URL should
+use the MySQL SQLAlchemy driver:
 
 ```dotenv
-DATABASE_URL=postgresql+psycopg://warband_hq_user:YOUR_DATABASE_PASSWORD@localhost:5432/warband_hq
+DATABASE_URL=mysql+pymysql://warband_hq_user:YOUR_DATABASE_PASSWORD@127.0.0.1:8889/warband_hq
 
 BLIZZARD_CLIENT_ID=YOUR_BLIZZARD_CLIENT_ID
 BLIZZARD_CLIENT_SECRET=YOUR_BLIZZARD_CLIENT_SECRET
@@ -218,113 +215,61 @@ BLIZZARD_REDIRECT_URI=http://127.0.0.1:8000/api/auth/callback
 SESSION_SECRET_KEY=YOUR_SESSION_SECRET
 ```
 
-Use the variable names defined in `backend/.env.example` as the source of truth.
+Adjust the host and port if your local MySQL installation differs. Use
+the variable names in `backend/.env.example` as the source of truth.
 
-Generate a strong, random session secret. Never reuse your Blizzard client secret as the session secret.
+Generate a strong, random session secret. Never reuse your Blizzard
+client secret as the session secret.
 
-**Security requirements:**
-
-- Never commit `backend/.env` to Git.
-- Never publish your Blizzard client secret.
-- Never include real passwords or secrets in documentation.
-- Keep `.env.example` limited to placeholder values.
+**Security requirements** - Never commit `backend/.env`. - Never publish
+Blizzard credentials, database passwords, session secrets, access
+tokens, or session identifiers. - Keep `.env.example` limited to
+placeholders. - Avoid sharing terminal output that contains credentials.
 
 ### 4. Backend Setup
 
-The backend uses FastAPI, SQLAlchemy, PostgreSQL, and Alembic.
+From the repository root, create and activate a virtual environment.
 
-#### Windows — PowerShell
-
-From the repository root:
+**Windows PowerShell**
 
 ```powershell
 cd backend
 python -m venv .venv
-```
-
-Activate the virtual environment:
-
-```powershell
 .\.venv\Scripts\Activate.ps1
-```
-
-If PowerShell blocks activation because of its execution policy, use an appropriate local environment configuration or activate the environment through another supported terminal. Avoid changing system-wide security settings unnecessarily.
-
-Install the dependencies:
-
-```powershell
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-#### macOS — Terminal
-
-From the repository root:
+**macOS Terminal**
 
 ```bash
 cd backend
 python3 -m venv .venv
-```
-
-Activate the virtual environment:
-
-```bash
 source .venv/bin/activate
-```
-
-Install the dependencies:
-
-```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-On macOS, make sure the selected Python version is compatible with the project's pinned dependencies.
-
-#### Apply Database Migrations
-
-Once PostgreSQL is running and `backend/.env` is configured, run the following command from the `backend` directory with the virtual environment activated:
-
-```bash
-alembic upgrade head
-```
-
-Alembic manages database schema changes. Use the project's migrations instead of manually creating application tables.
-
-To inspect the current migration revision:
-
-```bash
-alembic current
-```
+The project uses versioned SQL scripts for database setup. **Alembic is
+not used**; apply the SQL scripts in `backend/database/` when setting up
+a new local database or when the project documents a schema change.
 
 #### Start the Backend
 
-From the `backend` directory:
+From `backend`, with the virtual environment activated:
 
 ```bash
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-The backend should now be accessible at:
+The backend should be available at: - API: <http://127.0.0.1:8000/> -
+Interactive API documentation: <http://127.0.0.1:8000/docs>
 
-- API: http://127.0.0.1:8000/
-- Interactive API documentation: http://127.0.0.1:8000/docs
-
-Keep this terminal open while using the application.
+Keep the backend terminal open while using the application.
 
 ### 5. Frontend Setup
 
 Open a second terminal from the repository root.
-
-#### Windows — PowerShell
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-#### macOS — Terminal
 
 ```bash
 cd frontend
@@ -334,35 +279,28 @@ npm run dev
 
 The Vite development server is configured to use:
 
-http://127.0.0.1:5173/
+<http://127.0.0.1:5173/>
 
 The frontend communicates with the backend at:
 
-http://127.0.0.1:8000/
+<http://127.0.0.1:8000/>
 
-If you change the frontend or backend ports, make sure the API configuration and backend CORS settings remain consistent.
+If you change either port, keep the frontend API configuration and
+backend CORS settings consistent.
 
-#### Useful Frontend Commands
-
-Run the linter:
+Useful frontend commands:
 
 ```bash
 npm run lint
-```
-
-Build the production version:
-
-```bash
 npm run build
 ```
 
-Stop the development server with `Ctrl + C`.
+Stop the development server with `Ctrl+C`.
 
 ### 6. Blizzard OAuth Configuration
 
-Create or configure an application in the Blizzard Developer Portal:
-
-https://develop.battle.net/
+Create or configure an application in the [Blizzard Developer
+Portal](https://develop.battle.net/).
 
 Set the OAuth redirect URI to:
 
@@ -370,53 +308,73 @@ Set the OAuth redirect URI to:
 http://127.0.0.1:8000/api/auth/callback
 ```
 
-Make sure this value matches `BLIZZARD_REDIRECT_URI` in `backend/.env`.
+This value must match `BLIZZARD_REDIRECT_URI` in `backend/.env` and the
+redirect URI configured in the Blizzard Developer Portal.
 
-The backend uses the Blizzard client ID and client secret to initiate and complete the OAuth flow.
-
-The user must authenticate through Blizzard before accessing endpoints that require an authenticated session.
+The backend uses the Blizzard client ID and client secret to initiate
+and complete OAuth. Users must authenticate through Blizzard before
+accessing endpoints that require an authenticated session.
 
 ### 7. Verify the Installation
 
-Start PostgreSQL, the backend, and the frontend.
+1.  Start MySQL and confirm both databases exist.
+2.  Confirm `backend/.env` contains the correct local MySQL URL and
+    Blizzard settings.
+3.  Start the backend and verify it starts without configuration or
+    database errors.
+4.  Open the API documentation at <http://127.0.0.1:8000/docs>.
+5.  Start the frontend and open <http://127.0.0.1:5173/>.
+6.  Test the Blizzard OAuth flow using the configured callback.
+7.  Verify character retrieval when Blizzard provides the required
+    account data.
 
-Then verify the following:
-
-1. The backend starts without configuration or database errors.
-2. Alembic migrations complete successfully.
-3. The API documentation opens at `http://127.0.0.1:8000/docs`.
-4. The frontend opens at `http://127.0.0.1:5173/`.
-5. Blizzard OAuth redirects to the configured callback.
-6. Authenticated character retrieval works when Blizzard provides the required account data.
-
-If the project exposes a health endpoint, verify it using the route implemented in the current backend. Do not assume a health endpoint is available unless it is present in the code.
+If the project exposes a health endpoint, use the route implemented in
+the current backend; do not assume one exists unless it is present in
+the code.
 
 ## Authentication API
 
-The documented authentication workflow uses the following endpoints:
+The authentication workflow uses these endpoints:
 
-| Method | Endpoint             | Description                              |
-| ------ | -------------------- | ---------------------------------------- |
-| GET    | `/api/auth/login`    | Starts Blizzard authentication           |
-| GET    | `/api/auth/callback` | Processes the OAuth callback             |
-| GET    | `/api/auth/me`       | Returns the authenticated user's profile |
-| POST   | `/api/auth/logout`   | Ends the user's session                  |
+Method Endpoint Description
 
-The backend manages authentication sessions. The frontend must send requests with credentials when necessary to preserve the session.
+---
+
+GET `/api/auth/login` Starts Blizzard authentication
+GET `/api/auth/callback` Processes the OAuth callback
+GET `/api/auth/me` Returns the authenticated user's profile
+POST `/api/auth/logout` Ends the user's session
+
+The backend manages authentication sessions. Frontend requests must
+include credentials when needed to preserve the session.
 
 ## Character API
 
-The character retrieval and import workflow uses the following endpoints:
+The character retrieval and import workflow uses these endpoints:
 
-| Method | Endpoint                    | Description                                                            |
-| ------ | --------------------------- | ---------------------------------------------------------------------- |
-| GET    | `/api/characters/available` | Retrieves characters available from the authenticated Blizzard account |
-| POST   | `/api/characters/import`    | Imports selected characters into Warband HQ                            |
-| GET    | `/api/characters`           | Retrieves characters imported by the authenticated user                |
+---
 
-The import endpoint accepts a JSON payload containing the selected Blizzard character IDs.
+Method Endpoint Description
 
-Example payload:
+---
+
+GET `/api/characters/available` Retrieves characters
+available from the
+authenticated Blizzard
+account
+
+POST `/api/characters/import` Imports selected
+characters into Warband
+HQ
+
+GET `/api/characters` Retrieves characters
+imported by the
+authenticated user
+
+---
+
+The import endpoint accepts a JSON payload containing selected Blizzard
+character IDs. For example:
 
 ```json
 {
@@ -424,53 +382,54 @@ Example payload:
 }
 ```
 
-The IDs above are illustrative and do not represent actual characters.
+These IDs are illustrative. The backend verifies that requested
+characters belong to the authenticated Blizzard account before importing
+them. Duplicate imports for the same user are skipped.
 
-The backend verifies that the requested characters belong to the authenticated Blizzard account before importing them. Duplicate imports for the same user are skipped.
+Refer to the current API implementation and interactive API
+documentation for exact request and response schemas.
 
-Imported character records are stored in PostgreSQL and associated with the authenticated application user.
+## Database Schema Management
 
-Refer to the current API implementation and the interactive API documentation for the exact request and response schemas.
+Warband HQ uses MySQL and SQL scripts for schema setup. Alembic
+migrations are no longer part of the project.
 
-## Database Migrations
+- `backend/database/setup.sql`: database setup SQL.
+- `backend/database/schema.sql`: application table definitions.
 
-Warband HQ uses Alembic to manage database schema changes.
-
-Run migration commands from the `backend` directory with the virtual environment activated.
-
-Apply all pending migrations:
-
-```bash
-alembic upgrade head
-```
-
-Inspect the current revision:
-
-```bash
-alembic current
-```
-
-Inspect the available migration history:
-
-```bash
-alembic history
-```
-
-After pulling changes that introduce new migrations, apply them before running the application against the updated schema.
-
-Do not delete existing migrations or modify an already-applied migration without understanding the impact on other environments.
+Review SQL changes before applying them. For a new environment, create
+the required databases and apply the schema to both the development and
+test databases. Do not run integration tests against `warband_hq`.
 
 ## Running Tests
 
 ### Backend Tests
 
-From the `backend` directory, with the virtual environment activated:
+From the `backend` directory with the virtual environment activated, the
+integration tests require `DATABASE_URL` to be present in the process
+environment and to point to `warband_hq_test`. The tests check this
+database name and fail if a different database is selected.
+
+For a local MAMP installation, set the test database URL for the test
+process. Replace the placeholder locally with your database password; do
+not share the real value:
 
 ```bash
-python -m pytest -v
+DATABASE_URL='mysql+pymysql://warband_hq_user:YOUR_DATABASE_PASSWORD@127.0.0.1:8889/warband_hq_test' python -m pytest -v
 ```
 
-The automated backend test suite covers application functionality, including authentication, character retrieval, imports, and relevant error cases as implemented in the project.
+Use your actual MySQL host and port if they differ. Avoid committing or
+sharing commands containing real credentials.
+
+To run only the tag integration tests:
+
+```bash
+DATABASE_URL='mysql+pymysql://warband_hq_user:YOUR_DATABASE_PASSWORD@127.0.0.1:8889/warband_hq_test' python -m pytest tests/test_tag_integration.py -v
+```
+
+The automated backend tests cover the application behavior implemented
+in the project. A passing test suite does not replace manual
+verification of database setup and the OAuth flow.
 
 ### Frontend Checks
 
@@ -487,67 +446,55 @@ These commands check the frontend code and generate a production build.
 
 ### Python Is Not Recognized
 
-On Windows, verify that Python is installed and available in the terminal.
-
 On macOS, try:
 
 ```bash
 python3 --version
 ```
 
-Use `python3` to create the virtual environment if the `python` command is unavailable.
+Use `python3` to create the virtual environment if `python` is
+unavailable.
 
 ### Virtual Environment Is Not Activated
 
-Windows PowerShell:
+**Windows PowerShell**
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-macOS:
+**macOS**
 
 ```bash
 source .venv/bin/activate
 ```
 
-After activation, install dependencies if necessary:
+Install dependencies from `backend` if needed:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-### PostgreSQL Connection Refused
+### MySQL Connection Refused
 
-Check that:
+Check that: - MySQL is running. - The database exists and the schema has
+been applied. - The database account exists and has the required
+permissions. - The password is correct. - `DATABASE_URL` uses the
+correct host, port, and database name. - For MAMP, the configured MySQL
+port is commonly `8889`; confirm it in your local MAMP configuration.
 
-- PostgreSQL is installed and running.
-- The database exists.
-- The configured database role exists.
-- The password is correct.
-- The database host and port match the local installation.
-- `DATABASE_URL` in `backend/.env` is correct.
+### Integration Tests Fail Before Running
 
-The default PostgreSQL port is `5432`, but some local installations use a different port.
-
-### Database Migration Errors
-
-Ensure the backend virtual environment is active and that the database connection is configured correctly.
-
-From `backend`, run:
-
-```bash
-alembic current
-alembic upgrade head
-```
-
-Read the complete error message before attempting to change the schema manually.
+The integration tests read `DATABASE_URL` from the process environment
+and require the database name `warband_hq_test`. A value in
+`backend/.env` loaded by Pydantic Settings is not automatically copied
+into `os.environ`. Set `DATABASE_URL` explicitly for the test command
+and ensure it targets the test database.
 
 ### Frontend Cannot Reach the Backend
 
-Confirm that the backend is running on port `8000` and the frontend is running on port `5173`.
-
-Check that the frontend API configuration points to:
+Confirm that the backend is running on port `8000` and the frontend on
+port `5173`. Check that the frontend API configuration points to:
 
 ```text
 http://127.0.0.1:8000
@@ -559,25 +506,25 @@ The backend CORS configuration must allow the frontend origin:
 http://127.0.0.1:5173
 ```
 
-Use the same hostname consistently. `localhost` and `127.0.0.1` may be treated as different origins by the browser.
+Use the same hostname consistently. Browsers may treat `localhost` and
+`127.0.0.1` as different origins.
 
 ### Blizzard OAuth Fails
 
-Verify that:
-
-- The client ID and client secret are correct.
-- The configured region is correct.
-- The redirect URI exactly matches the Blizzard Developer Portal configuration.
-- The callback endpoint is available.
-- The backend logs do not report an OAuth or session configuration error.
+Verify that: - The client ID and client secret are correct. - The
+configured region is correct. - The redirect URI exactly matches the
+Blizzard Developer Portal configuration. - The callback endpoint is
+available. - Backend logs do not report OAuth or session configuration
+errors.
 
 Never include the client secret in frontend code or public logs.
 
 ### Session Is Not Preserved
 
-Check that frontend API requests include credentials where required and that the backend session and CORS settings are compatible with the configured frontend origin.
-
-For local development, use the project's existing cookie settings rather than changing production security options unnecessarily.
+Check that frontend API requests include credentials where required and
+that backend session and CORS settings match the configured frontend
+origin. For local development, use the project's existing cookie
+settings rather than changing production security options unnecessarily.
 
 ### Node.js Dependencies or Build Failures
 
@@ -589,31 +536,44 @@ npm run lint
 npm run build
 ```
 
-If a dependency installation fails, inspect the Node.js version and the error output before deleting lockfiles or reinstalling packages.
+If installation fails, inspect the Node.js version and error output
+before deleting lockfiles or reinstalling packages.
 
 ## Security Notes
 
 - Never commit `.env` files containing real credentials.
 - Never expose Blizzard client secrets in frontend code.
 - Use a strong session secret.
-- Do not expose PostgreSQL directly to the public internet.
+- Use a dedicated MySQL account with limited permissions for the
+  application.
+- Do not expose a database service directly to the public internet.
 - Restrict CORS to the origins required by the application.
-- Use HTTPS and secure cookie settings when deploying outside local development.
-- Do not publish logs containing tokens, session identifiers, passwords, or other secrets.
+- Use HTTPS and secure cookie settings when deploying outside local
+  development.
+- Do not publish logs containing tokens, session identifiers,
+  passwords, or other secrets.
 
 ## Project Status
 
-Warband HQ is being developed incrementally using Agile sprints and user stories.
+Warband HQ is developed incrementally using Agile sprints and user
+stories.
 
-- **US-01 — Blizzard Authentication:** authentication and frontend integration implemented.
-- **US-02 — Character Retrieval:** character retrieval, database persistence, and import workflow implemented.
-- **US-03 — Character Overview:** character collection displayed in grid and list views.
-- **US-05 — Error Handling:** appropriate API errors for invalid or unavailable profile data.
-- **US-07 — Character Filtering and Sorting:** search, filtering, and sorting functionality.
-- **US-08 — Character Favorites:** persistent favorite management and favorites-only filtering.
-- **US-09 — Global Character Tag Management:** global character tag management implemented.
+- **US-01 --- Blizzard Authentication:** authentication and frontend
+  integration implemented.
+- **US-02 --- Character Retrieval:** character retrieval, database
+  persistence, and import workflow implemented.
+- **US-03 --- Character Overview:** character collection displayed in
+  grid and list views.
+- **US-05 --- Error Handling:** API errors for invalid or unavailable
+  profile data.
+- **US-07 --- Character Filtering and Sorting:** search, filtering,
+  and sorting.
+- **US-08 --- Character Favorites:** persistent favorite management
+  and favorites-only filtering.
+- **US-09 --- Global Character Tag Management:** global character tag
+  management implemented.
 
-Project status should be updated as user stories are completed and verified.
+Update project status as user stories are completed and verified.
 
 ## License
 

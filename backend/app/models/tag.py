@@ -6,6 +6,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -17,10 +18,14 @@ class Tag(Base):
 
     __tablename__ = "tags"
 
+    __table_args__ = (
+        UniqueConstraint("name", name="uq_tags_name"),
+    )
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     name: Mapped[str] = mapped_column(
-        String(50),
+        String(24),
         nullable=False,
     )
 

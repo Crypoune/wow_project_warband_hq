@@ -108,7 +108,7 @@ def callback(request: Request, code: str, state: str):
                 )
                 db.add(user)
 
-                # Envoie l'insertion à PostgreSQL pour obtenir l'identifiant.
+                # Envoie l'insertion à la base de données pour obtenir l'identifiant.
                 db.flush()
             else:
                 # Actualise la date de connexion de l'utilisateur existant.
@@ -173,7 +173,7 @@ def logout(request: Request):
 
     if session_token is not None:
         try:
-            # Ouvre une session SQLAlchemy pour accéder à PostgreSQL.
+            # Ouvre une session SQLAlchemy pour accéder à la base de données.
             with SessionLocal() as db:
                 # Recherche la session correspondant au cookie.
                 auth_session = db.scalar(

@@ -21,13 +21,14 @@ def integration_context():
     engine = create_engine(url)
     Session = sessionmaker(bind=engine, expire_on_commit=False)
 
-    # Identifiants uniques pour éviter les collisions entre exécutions.
+    # Identifiant unique pour éviter les collisions entre exécutions.
     suffix = uuid4().hex
-    tag_name = f"Integration Raid {suffix}"
+    tag_name = f"Raid {suffix[:16]}"
 
     with Session() as db:
-        user = User(blizzard_account_id=f"integration-user-{suffix}")
-        other_user = User(blizzard_account_id=f"integration-other-{suffix}")
+        # blizzard_account_id est limité à 24 caractères.
+        user = User(blizzard_account_id=f"i{suffix[:23]}")
+        other_user = User(blizzard_account_id=f"o{suffix[:23]}")
 
         db.add_all([user, other_user])
         db.commit()
@@ -60,18 +61,17 @@ def integration_context():
         yield ids
     finally:
         with Session() as db:
-            # Supprimer d'abord les associations des personnages de test.
+            # Supprimer uniquement les associations des personnages de test.
             db.query(CharacterTag).filter(
                 CharacterTag.character_id.in_(
                     [ids["character"], ids["other_character"]]
                 )
             ).delete(synchronize_session=False)
 
-            # Les tags sont globaux : supprimer uniquement celui créé
-            # par ce test, jamais tous les tags du catalogue.
-            db.query(Tag).filter(Tag.name == ids["tag_name"]).delete(
-                synchronize_session=False
-            )
+            # Les tags sont globaux : ne supprimer que celui de ce test.
+            db.query(Tag).filter(
+                Tag.name == ids["tag_name"]
+            ).delete(synchronize_session=False)
 
             db.query(Character).filter(
                 Character.id.in_(
@@ -93,7 +93,9 @@ def test_tag_lifecycle(integration_context):
     user_id = integration_context["user"]
     character_id = integration_context["character"]
 
-    tag = service.create_tag(f"  {integration_context['tag_name']}  ")
+    tag = service.create_tag(
+        f"  {integration_context['tag_name']}  "
+    )
 
     assert tag["name"] == integration_context["tag_name"]
     assert any(
@@ -101,19 +103,31 @@ def test_tag_lifecycle(integration_context):
         for t in service.get_tags()
     )
 
-    assert service.assign_tag(user_id, character_id, tag["id"]) is True
-    assert service.get_character_tags(user_id, character_id) == [tag]
+    assert service.assign_tag(
+        user_id, character_id, tag["id"]
+    ) is True
 
-    assert service.remove_tag(user_id, character_id, tag["id"]) is True
-    assert service.get_character_tags(user_id, character_id) == []
+    assert service.get_character_tags(
+        user_id, character_id
+    ) == [tag]
+
+    assert service.remove_tag(
+        user_id, character_id, tag["id"]
+    ) is True
+
+    assert service.get_character_tags(
+        user_id, character_id
+    ) == []
 
 
-def test_global_tag_can_be_assigned_by_another_user(integration_context):
+def test_global_tag_can_be_assigned_by_another_user(
+    integration_context,
+):
     service = TagService()
 
     tag = service.create_tag(integration_context["tag_name"])
 
-    # Un tag du catalogue global est utilisable par un autre utilisateur
+    # Un tag global peut être utilisé par un autre utilisateur
     # sur son propre personnage.
     assert service.assign_tag(
         integration_context["other_user"],
