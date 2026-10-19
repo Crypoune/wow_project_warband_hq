@@ -8,6 +8,13 @@ from app.core.database import SessionLocal
 from app.models.authentication_session import AuthenticationSession
 from app.models.user import User
 
+def is_session_expired(expires_at: datetime) -> bool:
+    """Vérifie l'expiration d'une session en utilisant l'UTC."""
+
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    return expires_at <= datetime.now(timezone.utc)
 
 def get_current_user(request: Request) -> User:
     """Retourne l'utilisateur connecté à partir de sa session."""
@@ -40,7 +47,7 @@ def get_current_user(request: Request) -> User:
 
             # Vérifie que la session n'a pas expiré.
             now = datetime.now(timezone.utc)
-            if auth_session.expires_at <= now:
+            if is_session_expired(auth_session.expires_at):
                 raise HTTPException(
                     status_code=401,
                     detail={"message": "Session expired"},
@@ -112,7 +119,7 @@ def get_current_auth(request: Request) -> CurrentAuth:
                     detail={"message": "Invalid session"},
                 )
 
-            if auth_session.expires_at <= datetime.now(timezone.utc):
+            if is_session_expired(auth_session.expires_at):
                 raise HTTPException(
                     status_code=401,
                     detail={"message": "Session expired"},
