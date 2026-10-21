@@ -40,6 +40,52 @@ function FavoriteButton({ character, onToggleFavorite }) {
   );
 }
 
+/**
+ * Affiche les niveaux d'objet d'un personnage.
+ *
+ * average_item_level : niveau d'objet moyen du personnage.
+ * equipped_item_level : niveau d'objet de son équipement actuellement porté.
+ *
+ * Les valeurs peuvent être null si Blizzard ne fournit pas ces données.
+ */
+function CharacterItemLevel({ character }) {
+  const averageItemLevel = character.average_item_level;
+  const equippedItemLevel = character.equipped_item_level;
+
+  // Si aucune valeur n'est disponible, on affiche un indicateur neutre.
+  if (averageItemLevel == null && equippedItemLevel == null) {
+    return (
+      <div className="character-item-level">
+        <span className="character-item-level-label">Ilvl</span>
+        <span className="character-item-level-unavailable">—</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="character-item-level"
+      aria-label={`Niveau d'objet moyen : ${averageItemLevel ?? "indisponible"} ; équipement : ${equippedItemLevel ?? "indisponible"}`}
+    >
+      <span className="character-item-level-label">Ilvl</span>
+
+      <span className="character-item-level-value">
+        {averageItemLevel ?? "—"}
+      </span>
+
+      <span className="character-item-level-separator" aria-hidden="true">
+        /
+      </span>
+
+      <span className="character-item-level-equipped">
+        {equippedItemLevel ?? "—"}
+      </span>
+
+      <span className="character-item-level-tooltip">Moyen / Équipé</span>
+    </div>
+  );
+}
+
 function CharacterTagManager({
   character,
   getCharacterTags,
@@ -614,6 +660,9 @@ function MyWarband({
                         {character.class || "Class unavailable"}
                         {character.race ? ` · ${character.race}` : ""}
                       </p>
+
+                      {/* Les niveaux d'objet restent distincts du niveau du personnage. */}
+                      <CharacterItemLevel character={character} />
                     </div>
                   </>
                 ) : (
@@ -668,9 +717,16 @@ function MyWarband({
                       {character.name || "Unknown character"}
                     </h3>
 
-                    <span className="character-row-level">
+                    {/* Niveau du personnage : ce n'est pas son niveau d'objet. */}
+                    <span
+                      className="character-row-level"
+                      title="Niveau du personnage"
+                    >
                       {character.level ?? "-"}
                     </span>
+
+                    {/* Niveau d'objet moyen et niveau d'objet équipé. */}
+                    <CharacterItemLevel character={character} />
 
                     <span className="character-row-realm">
                       {character.realm || "Realm unavailable"}

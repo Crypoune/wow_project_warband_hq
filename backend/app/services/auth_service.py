@@ -7,26 +7,33 @@ from app.core.config import Settings
 
 
 class InvalidBlizzardProfileError(Exception):
-    """Raised when Blizzard returns an invalid profile structure."""
+    """Signale une réponse de profil Blizzard dont la structure est invalide."""
 
 
 class AuthService:
-    """Gère la logique d'authentification Blizzard."""
+    """Gère l'authentification OAuth et les appels de profil à l'API Blizzard."""
 
     TOKEN_URL = "https://oauth.battle.net/token"
 
+    # Cache partagé entre les instances pour éviter de redemander les portraits.
+    # La clé combine le royaume et le nom normalisé du personnage.
     _character_media_cache: dict[tuple[str, str], str | None] = {}
 
     def __init__(self, settings: Settings):
-        # Conserve la configuration nécessaire au service.
+        """Conserve la configuration nécessaire aux appels Blizzard."""
+
         self.settings = settings
 
     def generate_oauth_state(self) -> str:
-        # Génère une valeur aléatoire utilisée pour sécuriser le retour OAuth.
+        """Génère une valeur aléatoire pour sécuriser le retour OAuth."""
+
+        # Le state permet de vérifier que le retour correspond à la demande
+        # d'authentification initiée par notre application.
         return secrets.token_urlsafe(32)
 
     def build_authorization_url(self, state: str) -> str:
-        # Prépare les paramètres nécessaires à la demande d'autorisation Blizzard.
+        """Construit l'URL de redirection vers l'autorisation Blizzard."""
+
         params = {
             "client_id": self.settings.blizzard_client_id,
             "response_type": "code",
@@ -35,20 +42,21 @@ class AuthService:
             "state": state,
         }
 
-        # Encode correctement les paramètres pour construire l'URL finale.
+        # urlencode encode les paramètres pour qu'ils soient correctement
+        # transmis dans l'URL, notamment le redirect_uri et le state.
         return f"https://oauth.battle.net/authorize?{urlencode(params)}"
 
     def exchange_code_for_token(self, code: str) -> dict:
-        """Échange le code OAuth contre un access token Blizzard."""
+        """Échange le code OAuth reçu contre un access token Blizzard."""
 
-        # Prépare les données nécessaires à l'échange du code OAuth.
         data = {
             "grant_type": "authorization_code",
             "code": code,
             "redirect_uri": self.settings.blizzard_redirect_uri,
         }
 
-        # Envoie le code à Blizzard pour obtenir un access token.
+        # Les identifiants de l'application sont transmis en authentification
+        # HTTP Basic. Le code OAuth est échangé côté serveur, pas côté frontend.
         response = httpx.post(
             self.TOKEN_URL,
             data=data,
@@ -59,10 +67,9 @@ class AuthService:
             timeout=10.0,
         )
 
-        # Déclenche une erreur si Blizzard renvoie un statut HTTP d'échec.
+        # Une réponse HTTP en erreur est propagée à la couche appelante.
         response.raise_for_status()
 
-        # Retourne la réponse JSON fournie par Blizzard.
         return response.json()
 
     def validate_oauth_state(
@@ -70,15 +77,54 @@ class AuthService:
         received_state: str,
         expected_state: str,
     ) -> bool:
-        # Vérifie que le state reçu correspond à celui généré avant la redirection.
+        """Vérifie que le state reçu correspond à celui attendu."""
+
+        # compare_digest compare les valeurs sans comparaison de chaînes
+        # ordinaire, afin de limiter les risques d'attaques temporelles.
         return secrets.compare_digest(received_state, expected_state)
 
-
     def get_account_profile(self, access_token: str) -> dict:
-        """Récupère le profil du compte WoW connecté."""
+        """Récupère les comptes WoW associés au compte Blizzard connecté."""
 
         response = httpx.get(
-            f"https://{self.settings.blizzard_region}.api.blizzard.com/profile/user/wow",
+            (
+                f"https://{self.settings.blizzard_region}.api.blizzard.com"
+                "/profile/user/wow"
+            ),
+            params={
+                "namespace": f"profile-{self.settings.blizzard_region}",
+                "locale": "fr_FR",
+            },
+            headers={
+                "Authorization": f"Bearer {access_token}",
+            },
+            timeout=10.0,
+        )
+
+        response.raise_for_status()
+
+        # La validation de la structure est effectuée par la méthode qui
+        # exploite le profil, afin de centraliser les règles de validation.
+        return response.json()
+
+    def get_character_profile(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+    ) -> dict:
+        """Récupère le profil détaillé d'un personnage WoW."""
+
+        # Cet endpoint fournit les informations générales du personnage,
+        # notamment average_item_level et equipped_item_level lorsqu'ils
+        # sont présents dans la réponse de Blizzard.
+        url = (
+            f"https://{self.settings.blizzard_region}.api.blizzard.com"
+            f"/profile/wow/character/{realm_slug}/{character_name.lower()}"
+        )
+
+        response = httpx.get(
+            url,
             params={
                 "namespace": f"profile-{self.settings.blizzard_region}",
                 "locale": "fr_FR",
@@ -92,8 +138,15 @@ class AuthService:
         response.raise_for_status()
         profile = response.json()
 
-        return profile
+        # On vérifie le type de la réponse avant que le service appelant
+        # utilise .get(). Une réponse mal formée ne doit pas être traitée
+        # comme un profil valide.
+        if not isinstance(profile, dict):
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard profile structure"
+            )
 
+        return profile
 
     def get_account_characters(self, access_token: str) -> list[dict]:
         """Récupère les personnages de tous les comptes WoW."""
@@ -101,45 +154,62 @@ class AuthService:
         profile = self.get_account_profile(access_token)
 
         if not isinstance(profile, dict):
-            raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard profile structure"
+            )
 
         accounts = profile.get("wow_accounts", [])
 
         if not isinstance(accounts, list):
-            raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard profile structure"
+            )
 
         if not all(isinstance(account, dict) for account in accounts):
-            raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard profile structure"
+            )
 
-        # Vérifie que chaque compte contient une liste de personnages valide.
+        # On valide les listes avant de parcourir les comptes. Cela évite
+        # de traiter silencieusement une structure inattendue de Blizzard.
         for account in accounts:
             account_characters = account.get("characters", [])
 
             if not isinstance(account_characters, list):
-                raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
+                raise InvalidBlizzardProfileError(
+                    "Invalid Blizzard profile structure"
+                )
 
-            if not all(isinstance(entry, dict) for entry in account_characters):
-                raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
+            if not all(
+                isinstance(entry, dict) for entry in account_characters
+            ):
+                raise InvalidBlizzardProfileError(
+                    "Invalid Blizzard profile structure"
+                )
 
         characters = []
 
-        # Parcourt les comptes WoW associés au compte Blizzard.
+        # Un compte Blizzard peut contenir plusieurs comptes WoW.
         for account in accounts:
-            # Parcourt les personnages de chaque compte WoW.
             for entry in account.get("characters", []):
-                # Les objets imbriqués sont facultatifs, mais doivent être des dictionnaires.
+                # Ces champs imbriqués sont facultatifs. Lorsqu'ils sont
+                # présents, ils doivent toutefois être des dictionnaires.
                 nested_fields = (
                     "character",
                     "realm",
                     "playable_class",
                     "playable_race",
                     "faction",
+                    "gender",
                 )
 
                 for field in nested_fields:
                     value = entry.get(field, {})
+
                     if not isinstance(value, dict):
-                        raise InvalidBlizzardProfileError("Invalid Blizzard profile structure")
+                        raise InvalidBlizzardProfileError(
+                            "Invalid Blizzard profile structure"
+                        )
 
                 character = entry.get("character", {})
                 realm = entry.get("realm", {})
@@ -148,6 +218,8 @@ class AuthService:
                 faction = entry.get("faction", {})
                 gender = entry.get("gender", {})
 
+                # On transforme la réponse Blizzard en dictionnaire stable
+                # pour le reste de l'application, sans conserver tout le JSON.
                 characters.append(
                     {
                         "id": entry.get("id"),
@@ -167,16 +239,16 @@ class AuthService:
 
         return characters
 
-
     def get_character_media(
         self,
         access_token: str,
         realm_slug: str,
         character_name: str,
     ) -> str | None:
-        """Retrieve the avatar URL for a WoW character."""
+        """Récupère l'URL du portrait d'un personnage WoW."""
 
-        # Check the cache first
+        # Le nom est normalisé en minuscules pour retrouver la même entrée
+        # du cache quelle que soit la casse utilisée lors de l'appel.
         cache_key = (realm_slug, character_name.lower())
 
         if cache_key in self._character_media_cache:
@@ -185,7 +257,7 @@ class AuthService:
         url = (
             f"https://{self.settings.blizzard_region}.api.blizzard.com"
             f"/profile/wow/character/{realm_slug}/{character_name.lower()}"
-            f"/character-media"
+            "/character-media"
         )
 
         response = httpx.get(
@@ -194,15 +266,20 @@ class AuthService:
                 "namespace": f"profile-{self.settings.blizzard_region}",
                 "locale": "fr_FR",
             },
-            headers={"Authorization": f"Bearer {access_token}"},
+            headers={
+                "Authorization": f"Bearer {access_token}",
+            },
             timeout=10.0,
         )
+
         response.raise_for_status()
 
         media = response.json()
+
+        # Une réponse sans assets exploitables ne fournit pas de portrait.
         assets = media.get("assets", [])
 
-        # Prefer the inset asset, then fall back to the avatar.
+        # On privilégie inset, puis avatar si inset n'est pas disponible.
         preferred_keys = ("inset", "avatar")
 
         avatar_url = next(
@@ -210,10 +287,17 @@ class AuthService:
                 asset.get("value")
                 for key in preferred_keys
                 for asset in assets
-                if asset.get("key") == key and asset.get("value")
+                if (
+                    isinstance(asset, dict)
+                    and asset.get("key") == key
+                    and asset.get("value")
+                )
             ),
             None,
         )
 
+        # On mémorise aussi l'absence de portrait pour éviter de répéter
+        # inutilement la même requête pendant la durée de vie du processus.
         self._character_media_cache[cache_key] = avatar_url
+
         return avatar_url

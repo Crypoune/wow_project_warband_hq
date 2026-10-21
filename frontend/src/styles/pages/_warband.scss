@@ -1,7 +1,7 @@
 @use "../abstracts/variables" as vars;
 
 // ========================================
-// SELECTION TOOLBAR
+// SELECTION TOOLBAR*
 // ========================================
 
 .selection-toolbar,
@@ -32,7 +32,7 @@
 }
 
 // ========================================
-// COLLECTION COUNTER
+// COLLECTION COUNTER*
 // ========================================
 
 .collection-count {
@@ -61,7 +61,7 @@
 }
 
 // ========================================
-// VIEW TOGGLE
+// VIEW TOGGLE*
 // ========================================
 
 .view-toggle {
@@ -108,7 +108,7 @@
 }
 
 // ========================================
-// CHARACTER CARDS
+// CHARACTER CARDS*
 // ========================================
 
 .character-card {
@@ -221,7 +221,54 @@
 }
 
 // ========================================
-// FILTER TOOLBAR
+// CHARACTER ITEM LEVEL
+// ========================================
+
+// Affiche les niveaux d'objet moyen et équipé dans les cartes et la liste.
+.character-item-level {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  margin-top: 10px;
+  color: #f3d78e;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+// Le libellé est plus discret que les valeurs chiffrées.
+.character-item-level-label {
+  color: #aab4c6;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+// Sépare visuellement le niveau moyen du niveau équipé.
+.character-item-level-separator {
+  color: #aab4c6;
+  font-weight: 400;
+}
+
+// Une donnée peut être absente si Blizzard ne la renvoie pas.
+.character-item-level-unavailable {
+  color: #aab4c6;
+  font-weight: 400;
+}
+
+// Explication accessible et visible du format « moyen / équipé ».
+.character-item-level-tooltip {
+  flex-basis: 100%;
+  color: #aab4c6;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+// ========================================
+// FILTER TOOLBAR*
 // ========================================
 
 .filter-toolbar {
@@ -296,7 +343,7 @@
 }
 
 // ========================================
-// CHARACTER FILTER PANEL
+// CHARACTER FILTER PANEL*
 // ========================================
 
 .character-filters {
@@ -403,7 +450,7 @@
 }
 
 // ========================================
-// COMPACT CHARACTER LIST
+// COMPACT CHARACTER LIST*
 // ========================================
 
 .character-list {
@@ -487,7 +534,7 @@
 }
 
 // ========================================
-// CHARACTER FAVORITES
+// CHARACTER FAVORITES*
 // ========================================
 
 .favorite-button {
@@ -584,7 +631,7 @@
 }
 
 // ========================================
-// RESPONSIVE
+// RESPONSIVE*
 // ========================================
 
 @media (max-width: 700px) {
@@ -680,7 +727,7 @@
 }
 
 // ========================================
-// CHARACTER TAGS
+// CHARACTER TAGS*
 // ========================================
 
 .tag-creation {

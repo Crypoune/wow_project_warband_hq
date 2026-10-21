@@ -5,7 +5,10 @@ from sqlalchemy import select
 from app.core.database import SessionLocal
 from app.core.config import settings
 from app.models.character import Character
-from app.services.auth_service import AuthService
+from app.services.auth_service import (
+    AuthService,
+    InvalidBlizzardProfileError,
+)
 
 
 class CharacterService:
@@ -101,7 +104,12 @@ class CharacterService:
                 "is_favorite": character.is_favorite,
             }
 
-    def get_imported_characters(self, user_id: int, access_token: str) -> list[dict]:
+
+    def get_imported_characters(
+        self,
+        user_id: int,
+        access_token: str,
+    ) -> list[dict]:
         """Retourne les personnages importés par l'utilisateur."""
 
         with SessionLocal() as db:
@@ -143,7 +151,14 @@ class CharacterService:
             realm_slug = character_data.get("realm_slug")
             character_name = character_data.get("name")
 
+            # Valeurs par défaut : un échec de récupération ne bloque pas
+            # l'affichage du personnage.
+            character_data["portrait_url"] = None
+            character_data["average_item_level"] = None
+            character_data["equipped_item_level"] = None
+
             if realm_slug and character_name:
+                # Récupération du portrait.
                 try:
                     character_data["portrait_url"] = (
                         self.auth_service.get_character_media(
@@ -153,9 +168,29 @@ class CharacterService:
                         )
                     )
                 except httpx.HTTPError:
-                    character_data["portrait_url"] = None
-            else:
-                character_data["portrait_url"] = None
+                    # Le personnage reste disponible sans portrait.
+                    pass
+
+                # Récupération du profil détaillé et de son niveau d'objet.
+                try:
+                    profile = self.auth_service.get_character_profile(
+                        access_token,
+                        realm_slug,
+                        character_name,
+                    )
+
+                    character_data["average_item_level"] = profile.get(
+                        "average_item_level"
+                    )
+                    character_data["equipped_item_level"] = profile.get(
+                        "equipped_item_level"
+                    )
+
+                except (httpx.HTTPError, InvalidBlizzardProfileError):
+                    # Une erreur HTTP ou une réponse mal formée ne doit pas
+                    # empêcher l'affichage du personnage.
+                    # Les niveaux d'objet restent alors à None.
+                    pass
 
             result.append(character_data)
 
