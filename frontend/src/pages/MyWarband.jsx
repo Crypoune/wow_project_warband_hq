@@ -213,6 +213,7 @@ function MyWarband({
   importedCharacters,
   loadingImportedCharacters,
   onToggleFavorite,
+  onViewDetails,
   getCharacterTags,
   assignCharacterTag,
   removeCharacterTag,
@@ -595,12 +596,33 @@ function MyWarband({
             const classIcon = CLASS_ICONS[character.class];
             const factionIcon = FACTION_ICONS[character.faction];
             const raceIcon = RACE_ICONS[character.race_id]?.[character.gender];
+            const handleCharacterCardClick = (event, characterId) => {
+              if (event.target.closest("button, select, input, a")) {
+                return;
+              }
+
+              onViewDetails(characterId);
+            };
 
             return (
               <article
                 className={`character-card ${viewMode === "list" ? "character-row" : ""}`}
                 key={character.id}
                 style={{ "--class-color": classColor }}
+                onClick={(event) =>
+                  handleCharacterCardClick(event, character.id)
+                }
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
+
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onViewDetails(character.id);
+                  }
+                }}
+                tabIndex={0}
+                role="link"
+                aria-label={`View details for ${character.name}`}
               >
                 {viewMode === "grid" ? (
                   <>

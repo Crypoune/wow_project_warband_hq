@@ -171,6 +171,68 @@ def get_characters(
             detail={"message": "Unable to retrieve imported characters"},
         )
 
+
+@router.get("/{character_id}")
+def get_character_details(
+    character_id: int,
+    current_auth: CurrentAuth = Depends(get_current_auth),
+):
+    """Retourne les détails d'un personnage importé."""
+
+    try:
+        character = character_service.get_character_details(
+            user_id=current_auth.user_id,
+            character_id=character_id,
+            access_token=current_auth.access_token,
+        )
+
+        if character is None:
+            raise HTTPException(
+                status_code=404,
+                detail={"message": "Character not found"},
+            )
+
+        return {"character": character}
+
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Blizzard returned an unexpected response"},
+        ) from exc
+
+    except InvalidBlizzardProfileError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Blizzard returned an unexpected response"},
+        ) from exc
+
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 401:
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "message": "Blizzard access token is invalid or expired"
+                },
+            ) from exc
+
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Blizzard returned an HTTP error"},
+        ) from exc
+
+    except httpx.RequestError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={"message": "Unable to contact Blizzard"},
+        ) from exc
+
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={"message": "Unable to retrieve character details"},
+        ) from exc
+
+
 @router.patch("/{character_id}/favorite")
 def update_character_favorite(
     character_id: int,

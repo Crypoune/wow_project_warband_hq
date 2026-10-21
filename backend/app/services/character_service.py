@@ -195,3 +195,85 @@ class CharacterService:
             result.append(character_data)
 
         return result
+
+
+    def get_character_details(
+        self,
+        user_id: int,
+        character_id: int,
+        access_token: str,
+    ) -> dict | None:
+        """Retourne les détails d'un personnage importé par l'utilisateur."""
+
+        # Vérifie que le personnage appartient à l'utilisateur connecté.
+        with SessionLocal() as db:
+            character = db.scalar(
+                select(Character).where(
+                    Character.id == character_id,
+                    Character.user_id == user_id,
+                )
+            )
+
+            if character is None:
+                return None
+
+            # Copie les métadonnées avant la fermeture de la session.
+            imported_data = {
+                "id": character.id,
+                "blizzard_character_id": character.blizzard_character_id,
+                "is_favorite": character.is_favorite,
+                "imported_at": character.imported_at,
+                "last_synced_at": character.last_synced_at,
+            }
+
+        # Récupère les informations du personnage depuis Blizzard.
+        available_characters = self.get_available_characters(access_token)
+
+        blizzard_data = next(
+            (
+                item
+                for item in available_characters
+                if item["id"] == imported_data["blizzard_character_id"]
+            ),
+            {},
+        )
+
+        character_data = {**blizzard_data, **imported_data}
+
+        # Initialise les données détaillées.
+        character_data["portrait_url"] = None
+        character_data["average_item_level"] = None
+        character_data["equipped_item_level"] = None
+
+        realm_slug = character_data.get("realm_slug")
+        character_name = character_data.get("name")
+
+        if realm_slug and character_name:
+            # Le portrait est facultatif : son indisponibilité
+            # ne doit pas empêcher l'affichage des autres informations.
+            try:
+                character_data["portrait_url"] = (
+                    self.auth_service.get_character_media(
+                        access_token,
+                        realm_slug,
+                        character_name,
+                    )
+                )
+            except httpx.HTTPError:
+                pass
+
+            # Le profil détaillé fournit notamment les niveaux d'objet.
+            profile = self.auth_service.get_character_profile(
+                access_token,
+                realm_slug,
+                character_name,
+            )
+
+            character_data["average_item_level"] = profile.get(
+                "average_item_level"
+            )
+            character_data["equipped_item_level"] = profile.get(
+                "equipped_item_level"
+            )
+
+        return character_data

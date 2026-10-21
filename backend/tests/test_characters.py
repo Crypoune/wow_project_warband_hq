@@ -513,3 +513,109 @@ def test_update_character_favorite_requires_authentication():
 
     assert response.status_code == 401
     assert response.json()["message"] == "Authentication required"
+
+
+# GET /api/characters/{character_id}
+DETAILS = {
+    "id": 17,
+    "blizzard_character_id": 123,
+    "is_favorite": True,
+    "name": "Testwarrior",
+    "level": 80,
+    "realm": "Hyjal",
+    "realm_slug": "hyjal",
+    "portrait_url": "https://example.com/portrait.jpg",
+    "average_item_level": 250,
+    "equipped_item_level": 248,
+}
+
+
+def test_get_character_details_success():
+    with patch(
+        "app.api.characters.character_service.get_character_details",
+        return_value=DETAILS,
+    ) as mock_service:
+        response = client.get("/api/characters/17")
+
+    assert response.status_code == 200
+    assert response.json() == {"character": DETAILS}
+    mock_service.assert_called_once_with(
+        user_id=1,
+        character_id=17,
+        access_token="test-access-token",
+    )
+
+
+def test_get_character_details_not_found():
+    with patch(
+        "app.api.characters.character_service.get_character_details",
+        return_value=None,
+    ) as mock_service:
+        response = client.get("/api/characters/999")
+
+    assert response.status_code == 404
+    assert response.json()["message"] == "Character not found"
+    mock_service.assert_called_once_with(
+        user_id=1,
+        character_id=999,
+        access_token="test-access-token",
+    )
+
+
+def test_get_character_details_blizzard_http_error():
+    with patch(
+        "app.api.characters.character_service.get_character_details",
+        side_effect=make_blizzard_http_error(),
+    ):
+        response = client.get("/api/characters/17")
+
+    assert response.status_code == 502
+    assert response.json()["message"] == (
+        "Blizzard returned an HTTP error"
+    )
+
+
+def test_get_character_details_invalid_token():
+    with patch(
+        "app.api.characters.character_service.get_character_details",
+        side_effect=make_blizzard_unauthorized_error(),
+    ):
+        response = client.get("/api/characters/17")
+
+    assert response.status_code == 401
+    assert response.json()["message"] == (
+        "Blizzard access token is invalid or expired"
+    )
+
+
+def test_get_character_details_connection_error():
+    with patch(
+        "app.api.characters.character_service.get_character_details",
+        side_effect=make_blizzard_connection_error(),
+    ):
+        response = client.get("/api/characters/17")
+
+    assert response.status_code == 502
+    assert response.json()["message"] == "Unable to contact Blizzard"
+
+
+def test_get_character_details_database_error():
+    with patch(
+        "app.api.characters.character_service.get_character_details",
+        side_effect=SQLAlchemyError("Database unavailable"),
+    ):
+        response = client.get("/api/characters/17")
+
+    assert response.status_code == 500
+    assert response.json()["message"] == (
+        "Unable to retrieve character details"
+    )
+
+
+def test_get_character_details_requires_authentication():
+    app.dependency_overrides.clear()
+
+    response = client.get("/api/characters/17")
+
+    assert response.status_code == 401
+    assert response.json()["message"] == "Authentication required"

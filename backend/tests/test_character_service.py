@@ -418,3 +418,146 @@ def test_get_imported_characters_handles_invalid_profile(service):
     assert result[0]["name"] == "Testwarrior"
     assert result[0]["average_item_level"] is None
     assert result[0]["equipped_item_level"] is None
+
+
+def test_get_character_details_success(service, monkeypatch):
+    """Vérifie la récupération des détails d'un personnage importé."""
+
+    character = SimpleNamespace(
+        id=17,
+        blizzard_character_id=123,
+        user_id=42,
+        is_favorite=True,
+        imported_at=None,
+        last_synced_at=None,
+    )
+
+    mock_db = MagicMock()
+    mock_db.scalar.return_value = character
+
+    mock_session_local = MagicMock()
+    mock_session_local.return_value.__enter__.return_value = mock_db
+
+    monkeypatch.setattr(
+        "app.services.character_service.SessionLocal",
+        mock_session_local,
+    )
+
+    service.auth_service.get_account_characters.return_value = [
+        {
+            "id": 123,
+            "name": "Testwarrior",
+            "level": 80,
+            "realm": "Hyjal",
+            "realm_slug": "hyjal",
+        }
+    ]
+    service.auth_service.get_character_media.return_value = (
+        "https://example.com/portrait.jpg"
+    )
+    service.auth_service.get_character_profile.return_value = {
+        "average_item_level": 250,
+        "equipped_item_level": 248,
+    }
+
+    result = service.get_character_details(
+        user_id=42,
+        character_id=17,
+        access_token="test-token",
+    )
+
+    assert result["id"] == 17
+    assert result["blizzard_character_id"] == 123
+    assert result["is_favorite"] is True
+    assert result["name"] == "Testwarrior"
+    assert result["portrait_url"] == "https://example.com/portrait.jpg"
+    assert result["average_item_level"] == 250
+    assert result["equipped_item_level"] == 248
+
+    # La requête doit filtrer sur l'identifiant et le propriétaire.
+    statement = str(mock_db.scalar.call_args.args[0])
+    assert "characters.id" in statement
+    assert "characters.user_id" in statement
+
+
+def test_get_character_details_not_found(service, monkeypatch):
+    """Vérifie qu'un personnage absent n'est pas renvoyé."""
+
+    mock_db = MagicMock()
+    mock_db.scalar.return_value = None
+
+    mock_session_local = MagicMock()
+    mock_session_local.return_value.__enter__.return_value = mock_db
+
+    monkeypatch.setattr(
+        "app.services.character_service.SessionLocal",
+        mock_session_local,
+    )
+
+    result = service.get_character_details(
+        user_id=42,
+        character_id=999,
+        access_token="test-token",
+    )
+
+    assert result is None
+
+    # Aucun appel Blizzard n'est nécessaire si le personnage
+    # n'existe pas, ou n'appartient pas à l'utilisateur.
+    service.auth_service.get_account_characters.assert_not_called()
+    service.auth_service.get_character_media.assert_not_called()
+    service.auth_service.get_character_profile.assert_not_called()
+
+
+def test_get_character_details_portrait_failure(service, monkeypatch):
+    """Vérifie qu'un échec du portrait ne bloque pas les détails."""
+
+    character = SimpleNamespace(
+        id=17,
+        blizzard_character_id=123,
+        user_id=42,
+        is_favorite=False,
+        imported_at=None,
+        last_synced_at=None,
+    )
+
+    mock_db = MagicMock()
+    mock_db.scalar.return_value = character
+
+    mock_session_local = MagicMock()
+    mock_session_local.return_value.__enter__.return_value = mock_db
+
+    monkeypatch.setattr(
+        "app.services.character_service.SessionLocal",
+        mock_session_local,
+    )
+
+    service.auth_service.get_account_characters.return_value = [
+        {
+            "id": 123,
+            "name": "Testwarrior",
+            "level": 80,
+            "realm": "Hyjal",
+            "realm_slug": "hyjal",
+        }
+    ]
+
+    service.auth_service.get_character_media.side_effect = httpx.HTTPError(
+        "Blizzard media unavailable"
+    )
+
+    service.auth_service.get_character_profile.return_value = {
+        "average_item_level": 250,
+        "equipped_item_level": 248,
+    }
+
+    result = service.get_character_details(
+        user_id=42,
+        character_id=17,
+        access_token="test-token",
+    )
+
+    assert result["id"] == 17
+    assert result["portrait_url"] is None
+    assert result["average_item_level"] == 250
+    assert result["equipped_item_level"] == 248
