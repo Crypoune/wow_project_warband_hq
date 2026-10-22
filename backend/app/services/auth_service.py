@@ -18,9 +18,9 @@ class AuthService:
     # Cache partagé entre les instances pour éviter de redemander les portraits.
     # La clé combine le royaume et le nom normalisé du personnage.
     _character_media_cache: dict[
-    tuple[str, str],
-    dict[str, str | None],
-] = {}
+        tuple[str, str],
+        dict[str, str | None],
+    ] = {}
 
     def __init__(self, settings: Settings):
         """Conserve la configuration nécessaire aux appels Blizzard."""
