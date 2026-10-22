@@ -452,9 +452,10 @@ def test_get_character_details_success(service, monkeypatch):
             "realm_slug": "hyjal",
         }
     ]
-    service.auth_service.get_character_media.return_value = (
-        "https://example.com/portrait.jpg"
-    )
+    service.auth_service.get_character_media.return_value = {
+        "portrait_url": "https://example.com/portrait.jpg",
+        "main_art_url": "https://example.com/main.jpg",
+    }
     service.auth_service.get_character_profile.return_value = {
         "average_item_level": 250,
         "equipped_item_level": 248,
@@ -471,6 +472,7 @@ def test_get_character_details_success(service, monkeypatch):
     assert result["is_favorite"] is True
     assert result["name"] == "Testwarrior"
     assert result["portrait_url"] == "https://example.com/portrait.jpg"
+    assert result["main_art_url"] == "https://example.com/main.jpg"
     assert result["average_item_level"] == 250
     assert result["equipped_item_level"] == 248
 

@@ -17,7 +17,10 @@ class AuthService:
 
     # Cache partagé entre les instances pour éviter de redemander les portraits.
     # La clé combine le royaume et le nom normalisé du personnage.
-    _character_media_cache: dict[tuple[str, str], str | None] = {}
+    _character_media_cache: dict[
+    tuple[str, str],
+    dict[str, str | None],
+] = {}
 
     def __init__(self, settings: Settings):
         """Conserve la configuration nécessaire aux appels Blizzard."""
@@ -239,16 +242,15 @@ class AuthService:
 
         return characters
 
+
     def get_character_media(
         self,
         access_token: str,
         realm_slug: str,
         character_name: str,
-    ) -> str | None:
-        """Récupère l'URL du portrait d'un personnage WoW."""
+    ) -> dict[str, str | None]:
+        """Récupère le portrait et le rendu principal d'un personnage WoW."""
 
-        # Le nom est normalisé en minuscules pour retrouver la même entrée
-        # du cache quelle que soit la casse utilisée lors de l'appel.
         cache_key = (realm_slug, character_name.lower())
 
         if cache_key in self._character_media_cache:
@@ -273,19 +275,14 @@ class AuthService:
         )
 
         response.raise_for_status()
-
         media = response.json()
-
-        # Une réponse sans assets exploitables ne fournit pas de portrait.
         assets = media.get("assets", [])
 
-        # On privilégie inset, puis avatar si inset n'est pas disponible.
-        preferred_keys = ("inset", "avatar")
-
-        avatar_url = next(
+        # On privilégie inset pour le portrait, puis avatar.
+        portrait_url = next(
             (
                 asset.get("value")
-                for key in preferred_keys
+                for key in ("inset", "avatar")
                 for asset in assets
                 if (
                     isinstance(asset, dict)
@@ -296,8 +293,24 @@ class AuthService:
             None,
         )
 
-        # On mémorise aussi l'absence de portrait pour éviter de répéter
-        # inutilement la même requête pendant la durée de vie du processus.
-        self._character_media_cache[cache_key] = avatar_url
+        main_art_url = next(
+            (
+                asset.get("value")
+                for asset in assets
+                if (
+                    isinstance(asset, dict)
+                    and asset.get("key") == "main"
+                    and asset.get("value")
+                )
+            ),
+            None,
+        )
 
-        return avatar_url
+        result = {
+            "portrait_url": portrait_url,
+            "main_art_url": main_art_url,
+        }
+
+        self._character_media_cache[cache_key] = result
+
+        return result
