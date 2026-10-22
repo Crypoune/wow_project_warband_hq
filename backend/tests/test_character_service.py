@@ -461,6 +461,17 @@ def test_get_character_details_success(service, monkeypatch):
         "equipped_item_level": 248,
     }
 
+    # On simule la réponse de Blizzard contenant un objet équipé.
+    service.auth_service.get_character_equipment.return_value = {
+        "equipped_items": [
+            {
+                "slot": {"type": "HEAD", "name": "Tête"},
+                "item": {"id": 12345},
+                "level": {"value": 250},
+            }
+        ]
+    }
+
     result = service.get_character_details(
         user_id=42,
         character_id=17,
@@ -475,6 +486,15 @@ def test_get_character_details_success(service, monkeypatch):
     assert result["main_art_url"] == "https://example.com/main.jpg"
     assert result["average_item_level"] == 250
     assert result["equipped_item_level"] == 248
+
+    # L'équipement récupéré doit être présent dans la fiche.
+    assert result["equipment"] == [
+        {
+            "slot": {"type": "HEAD", "name": "Tête"},
+            "item": {"id": 12345},
+            "level": {"value": 250},
+        }
+    ]
 
     # La requête doit filtrer sur l'identifiant et le propriétaire.
     statement = str(mock_db.scalar.call_args.args[0])
@@ -509,6 +529,7 @@ def test_get_character_details_not_found(service, monkeypatch):
     service.auth_service.get_account_characters.assert_not_called()
     service.auth_service.get_character_media.assert_not_called()
     service.auth_service.get_character_profile.assert_not_called()
+    service.auth_service.get_character_equipment.assert_not_called()
 
 
 def test_get_character_details_portrait_failure(service, monkeypatch):
@@ -563,3 +584,67 @@ def test_get_character_details_portrait_failure(service, monkeypatch):
     assert result["portrait_url"] is None
     assert result["average_item_level"] == 250
     assert result["equipped_item_level"] == 248
+
+
+def test_get_character_details_equipment_failure(service, monkeypatch):
+    """Vérifie qu'un échec de l'équipement ne bloque pas la fiche."""
+
+    character = SimpleNamespace(
+        id=17,
+        blizzard_character_id=123,
+        user_id=42,
+        is_favorite=False,
+        imported_at=None,
+        last_synced_at=None,
+    )
+
+    # Simule la session de base de données.
+    mock_db = MagicMock()
+    mock_db.scalar.return_value = character
+
+    mock_session_local = MagicMock()
+    mock_session_local.return_value.__enter__.return_value = mock_db
+
+    monkeypatch.setattr(
+        "app.services.character_service.SessionLocal",
+        mock_session_local,
+    )
+
+    # Simule le personnage accessible sur le compte Blizzard.
+    service.auth_service.get_account_characters.return_value = [
+        {
+            "id": 123,
+            "name": "Testwarrior",
+            "level": 80,
+            "realm": "Hyjal",
+            "realm_slug": "hyjal",
+        }
+    ]
+
+    # Les médias et le profil fonctionnent normalement.
+    service.auth_service.get_character_media.return_value = {
+        "portrait_url": "https://example.com/portrait.jpg",
+        "main_art_url": "https://example.com/main.jpg",
+    }
+
+    service.auth_service.get_character_profile.return_value = {
+        "average_item_level": 250,
+        "equipped_item_level": 248,
+    }
+
+    # En revanche, Blizzard renvoie une erreur pour l'équipement.
+    service.auth_service.get_character_equipment.side_effect = (
+        httpx.HTTPError("Blizzard equipment unavailable")
+    )
+
+    result = service.get_character_details(
+        user_id=42,
+        character_id=17,
+        access_token="test-token",
+    )
+
+    # La fiche reste disponible malgré l'échec de l'équipement.
+    assert result["name"] == "Testwarrior"
+    assert result["average_item_level"] == 250
+    assert result["equipped_item_level"] == 248
+    assert result["equipment"] == []

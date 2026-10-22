@@ -262,6 +262,7 @@ class CharacterService:
             character_data["main_art_url"] = None
             character_data["average_item_level"] = None
             character_data["equipped_item_level"] = None
+            character_data["equipment"] = []
 
             # Les appels de profil nécessitent le royaume et le nom du personnage.
             if realm_slug and character_name:
@@ -407,6 +408,7 @@ class CharacterService:
         character_data["main_art_url"] = None
         character_data["average_item_level"] = None
         character_data["equipped_item_level"] = None
+        character_data["equipment"] = []
 
         realm_slug = character_data.get("realm_slug")
         character_name = character_data.get("name")
@@ -456,6 +458,26 @@ class CharacterService:
             character_data["equipped_item_level"] = profile.get(
                 "equipped_item_level"
             )
+
+            # ---------------------------------------------------------
+            # 5. Récupération de l'équipement du personnage
+            # ---------------------------------------------------------
+
+            try:
+                # Récupère la liste des objets actuellement équipés.
+                equipment_data = self.auth_service.get_character_equipment(
+                    access_token,
+                    realm_slug,
+                    character_name,
+                )
+
+                # Transmet les objets équipés au frontend.
+                character_data["equipment"] = equipment_data["equipped_items"]
+
+            except (httpx.HTTPError, InvalidBlizzardProfileError):
+                # Un échec de cet appel ne doit pas empêcher
+                # l'affichage du reste de la fiche du personnage.
+                pass
 
         # Retourne un dictionnaire directement exploitable par la route API.
         return character_data

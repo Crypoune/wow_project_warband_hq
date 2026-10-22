@@ -151,6 +151,54 @@ class AuthService:
 
         return profile
 
+
+    def get_character_equipment(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+    ) -> dict:
+        """Récupère l'équipement actuellement porté par un personnage WoW."""
+
+        # L'endpoint utilise le royaume et le nom normalisé du personnage.
+        url = (
+            f"https://{self.settings.blizzard_region}.api.blizzard.com"
+            f"/profile/wow/character/{realm_slug}/{character_name.lower()}"
+            "/equipment"
+        )
+
+        # On demande les données de profil, avec la région configurée
+        # et la langue française, comme pour les autres appels Blizzard.
+        response = httpx.get(
+            url,
+            params={
+                "namespace": f"profile-{self.settings.blizzard_region}",
+                "locale": "fr_FR",
+            },
+            headers={
+                "Authorization": f"Bearer {access_token}",
+            },
+            timeout=10.0,
+        )
+
+        # Une erreur HTTP est propagée à la couche appelante.
+        response.raise_for_status()
+
+        equipment = response.json()
+
+        # On vérifie la structure avant de transmettre les données.
+        # Une réponse inattendue ne doit pas être considérée comme valide.
+        if (
+            not isinstance(equipment, dict)
+            or not isinstance(equipment.get("equipped_items"), list)
+        ):
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard equipment structure"
+            )
+
+        return equipment
+
+
     def get_account_characters(self, access_token: str) -> list[dict]:
         """Récupère les personnages de tous les comptes WoW."""
 

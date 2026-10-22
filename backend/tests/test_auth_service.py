@@ -284,3 +284,58 @@ def test_get_character_profile_rejects_invalid_response(auth_service):
                 "dalaran",
                 "Fastnfurieuz",
             )
+
+
+def test_get_character_equipment_returns_equipment(auth_service):
+    """Vérifie que l'équipement Blizzard est correctement récupéré."""
+
+    expected_equipment = {
+        "equipped_items": [
+            {
+                "slot": {"type": "HEAD", "name": "Tête"},
+                "item": {"id": 12345},
+                "level": {"value": 250},
+            }
+        ]
+    }
+
+    with patch(
+        "app.services.auth_service.httpx.get",
+    ) as mock_get:
+        mock_get.return_value.json.return_value = expected_equipment
+        mock_get.return_value.raise_for_status.return_value = None
+
+        result = auth_service.get_character_equipment(
+            "fake-access-token",
+            "dalaran",
+            "Fastnfurieuz",
+        )
+
+    assert result == expected_equipment
+
+    # Vérifie l'endpoint, le namespace et l'authentification.
+    call_args = mock_get.call_args
+    assert call_args.args[0].endswith(
+        "/profile/wow/character/dalaran/fastnfurieuz/equipment"
+    )
+    assert call_args.kwargs["params"]["namespace"] == "profile-eu"
+    assert call_args.kwargs["headers"]["Authorization"] == (
+        "Bearer fake-access-token"
+    )
+
+
+def test_get_character_equipment_rejects_invalid_response(auth_service):
+    """Vérifie qu'une réponse sans liste d'objets est rejetée."""
+
+    with patch(
+        "app.services.auth_service.httpx.get",
+    ) as mock_get:
+        mock_get.return_value.json.return_value = {}
+        mock_get.return_value.raise_for_status.return_value = None
+
+        with pytest.raises(InvalidBlizzardProfileError):
+            auth_service.get_character_equipment(
+                "fake-access-token",
+                "dalaran",
+                "Fastnfurieuz",
+            )
