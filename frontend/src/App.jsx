@@ -18,13 +18,6 @@ import {
   getImportedCharacters,
   importCharacters,
   updateCharacterFavorite,
-  getCharacterTags,
-  assignCharacterTag,
-  removeCharacterTag,
-  getTags,
-  createTag,
-  updateTag,
-  deleteTag,
 } from "./services/characterService.js";
 
 function App() {
@@ -118,6 +111,14 @@ function App() {
         err.message || "Unable to update character favorite. Please try again.",
       );
     }
+  };
+
+  const handleUpdateCharacterTags = (characterId, tags) => {
+    setImportedCharacters((currentCharacters) =>
+      currentCharacters.map((character) =>
+        character.id === characterId ? { ...character, tags } : character,
+      ),
+    );
   };
 
   const handleViewCharacterDetails = (characterId) => {
@@ -396,10 +397,6 @@ function App() {
                 loadingImportedCharacters={loadingImportedCharacters}
                 onToggleFavorite={handleToggleFavorite}
                 onViewDetails={handleViewCharacterDetails}
-                getCharacterTags={getCharacterTags}
-                assignCharacterTag={assignCharacterTag}
-                removeCharacterTag={removeCharacterTag}
-                getTags={getTags}
               />
             )}
 
@@ -408,6 +405,7 @@ function App() {
                 <CharacterDetails
                   characterId={selectedCharacterId}
                   onBack={handleBackToWarband}
+                  onUpdateTags={handleUpdateCharacterTags}
                 />
               )}
 

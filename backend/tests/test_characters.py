@@ -29,6 +29,10 @@ CHARACTERS = [
         "race_id": 1,
         "faction": "Alliance",
         "profile_url": "https://example.com/character",
+        "tags": [
+            {"id": 10, "name": "Main"},
+            {"id": 11, "name": "Raid"},
+        ],
     }
 ]
 
@@ -527,6 +531,10 @@ DETAILS = {
     "portrait_url": "https://example.com/portrait.jpg",
     "average_item_level": 250,
     "equipped_item_level": 248,
+    "tags": [
+        {"id": 10, "name": "Main"},
+        {"id": 11, "name": "Raid"},
+    ],
 }
 
 

@@ -5,6 +5,7 @@ from sqlalchemy import select
 from app.core.database import SessionLocal
 from app.core.config import settings
 from app.models.character import Character
+from app.services.tag_service import TagService
 from app.services.auth_service import (
     AuthService,
     InvalidBlizzardProfileError,
@@ -35,6 +36,7 @@ class CharacterService:
         et les paramètres nécessaires aux requêtes.
         """
         self.auth_service = AuthService(settings)
+        self.tag_service = TagService()
 
     def get_available_characters(self, access_token: str) -> list[dict]:
         """
@@ -226,6 +228,11 @@ class CharacterService:
         if not imported_data:
             return []
 
+        tags_by_character = self.tag_service.get_tags_for_characters(
+            user_id=user_id,
+            character_ids=[character["id"] for character in imported_data],
+        )
+
         # Blizzard reste la source de vérité pour les données du personnage.
         # On récupère la liste disponible sur le compte connecté.
         available_characters = self.get_available_characters(access_token)
@@ -251,7 +258,7 @@ class CharacterService:
             # Les métadonnées locales sont placées en dernier pour préserver
             # les valeurs de Warband HQ, comme l'identifiant interne et le favori.
             character_data = {**blizzard_data, **imported}
-
+            character_data["tags"] = tags_by_character.get(imported["id"], [])
             realm_slug = character_data.get("realm_slug")
             character_name = character_data.get("name")
 
@@ -379,6 +386,11 @@ class CharacterService:
                 "last_synced_at": character.last_synced_at,
             }
 
+            tags_by_character = self.tag_service.get_tags_for_characters(
+                user_id=user_id,
+                character_ids=[character_id],
+            )
+
         # -------------------------------------------------------------
         # 2. Récupération des informations générales depuis Blizzard
         # -------------------------------------------------------------
@@ -400,6 +412,7 @@ class CharacterService:
         # Fusionne les informations Blizzard et les métadonnées locales.
         # Les valeurs locales gardent la priorité pour les champs communs.
         character_data = {**blizzard_data, **imported_data}
+        character_data["tags"] = tags_by_character.get(character_id, [])
 
         # Initialise les données détaillées.
         # Ces valeurs par défaut garantissent une structure de réponse stable,
