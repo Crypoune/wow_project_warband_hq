@@ -42,6 +42,14 @@ developed incrementally through Agile sprints and user stories.
 - Return appropriate API errors when character information cannot be
   retrieved.
 
+### Character Details --- US-06
+
+- Open a dedicated details page for a selected character.
+- Display an updated character identity header.
+- Show character equipment.
+- Display primary and secondary character statistics.
+- Present detailed character information in an improved page layout.
+
 ### Character Filtering and Sorting --- US-07
 
 - Search by character name, race, class, or realm.
@@ -558,20 +566,15 @@ before deleting lockfiles or reinstalling packages.
 Warband HQ is developed incrementally using Agile sprints and user
 stories.
 
-- **US-01 --- Blizzard Authentication:** authentication and frontend
-  integration implemented.
-- **US-02 --- Character Retrieval:** character retrieval, database
-  persistence, and import workflow implemented.
-- **US-03 --- Character Overview:** character collection displayed in
-  grid and list views.
-- **US-05 --- Error Handling:** API errors for invalid or unavailable
-  profile data.
-- **US-07 --- Character Filtering and Sorting:** search, filtering,
-  and sorting.
-- **US-08 --- Character Favorites:** persistent favorite management
-  and favorites-only filtering.
-- **US-09 --- Global Character Tag Management:** global character tag
-  management implemented.
+- **US-01 --- Blizzard Authentication:** authentication and frontend integration implemented.
+- **US-02 --- Character Retrieval:** character retrieval, database persistence, and import workflow implemented.
+- **US-03 --- Character Overview:** character collection displayed in grid and list views.
+- **US-04 --- Main Character Information:** character information including average and equipped item levels retrieved and displayed.
+- **US-05 --- Error Handling:** API errors for invalid or unavailable profile data.
+- **US-06 --- Character Details:** dedicated character details page with identity header, equipment, and primary and secondary statistics.
+- **US-07 --- Character Filtering and Sorting:** search, filtering, and sorting.
+- **US-08 --- Character Favorites:** persistent favorite management and favorites-only filtering.
+- **US-09 --- Global Character Tag Management:** global tag catalogue, administrator-only catalogue management, and character tag assignment.
 
 Update project status as user stories are completed and verified.
 
