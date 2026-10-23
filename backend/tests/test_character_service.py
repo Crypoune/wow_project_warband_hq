@@ -493,6 +493,7 @@ def test_get_character_details_success(service, monkeypatch):
             "slot": {"type": "HEAD", "name": "Tête"},
             "item": {"id": 12345},
             "level": {"value": 250},
+            "icon_url": None,
         }
     ]
 

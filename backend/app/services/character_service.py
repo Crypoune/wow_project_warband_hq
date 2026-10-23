@@ -460,7 +460,60 @@ class CharacterService:
             )
 
             # ---------------------------------------------------------
-            # 5. Récupération de l'équipement du personnage
+            # 5. Récupération des informations complémentaires
+            # ---------------------------------------------------------
+
+            character_data["guild"] = profile.get("guild")
+            character_data["active_title"] = profile.get("active_title")
+            character_data["active_spec"] = None
+            character_data["achievement_points"] = None
+            character_data["statistics"] = {}
+
+            try:
+                specializations = (
+                    self.auth_service.get_character_specializations(
+                        access_token,
+                        realm_slug,
+                        character_name,
+                    )
+                )
+
+                character_data["active_spec"] = specializations.get(
+                    "active_specialization"
+                )
+
+            except httpx.HTTPError:
+                pass
+
+            try:
+                achievements = self.auth_service.get_character_achievements(
+                    access_token,
+                    realm_slug,
+                    character_name,
+                )
+
+                character_data["achievement_points"] = achievements.get(
+                    "total_quantity"
+                )
+
+            except httpx.HTTPError:
+                pass
+
+            try:
+                character_data["statistics"] = (
+                    self.auth_service.get_character_statistics(
+                        access_token,
+                        realm_slug,
+                        character_name,
+                    )
+                )
+
+            except httpx.HTTPError:
+                pass
+
+
+            # ---------------------------------------------------------
+            # 6. Récupération de l'équipement du personnage
             # ---------------------------------------------------------
 
             try:
@@ -471,8 +524,29 @@ class CharacterService:
                     character_name,
                 )
 
-                # Transmet les objets équipés au frontend.
-                character_data["equipment"] = equipment_data["equipped_items"]
+
+                # Enrichit chaque objet équipé avec l'URL de son icône.
+                equipped_items = equipment_data["equipped_items"]
+
+                for item in equipped_items:
+                    media = item.get("media", {})
+                    media_key = media.get("key", {})
+                    media_url = media_key.get("href")
+
+                    item["icon_url"] = None
+
+                    if media_url:
+                        try:
+                            item["icon_url"] = self.auth_service.get_item_icon_url(
+                                access_token,
+                                media_url,
+                            )
+                        except httpx.HTTPError:
+                            # Une icône indisponible ne bloque pas l'équipement.
+                            pass
+
+                character_data["equipment"] = equipped_items
+
 
             except (httpx.HTTPError, InvalidBlizzardProfileError):
                 # Un échec de cet appel ne doit pas empêcher

@@ -1,16 +1,16 @@
-import deathKnightIcon from "../assets/classes/classicon_deathknight.png";
-import demonHunterIcon from "../assets/classes/classicon_demonhunter.png";
-import druidIcon from "../assets/classes/classicon_druid.png";
-import evokerIcon from "../assets/classes/classicon_evoker.png";
-import hunterIcon from "../assets/classes/classicon_hunter.png";
-import mageIcon from "../assets/classes/classicon_mage.png";
-import monkIcon from "../assets/classes/classicon_monk.png";
-import paladinIcon from "../assets/classes/classicon_paladin.png";
-import priestIcon from "../assets/classes/classicon_priest.png";
-import rogueIcon from "../assets/classes/classicon_rogue.png";
-import shamanIcon from "../assets/classes/classicon_shaman.png";
-import warlockIcon from "../assets/classes/classicon_warlock.png";
-import warriorIcon from "../assets/classes/classicon_warrior.png";
+import deathKnightIcon from "../assets/classes/classicon_deathknight.webp";
+import demonHunterIcon from "../assets/classes/classicon_demonhunter.webp";
+import druidIcon from "../assets/classes/classicon_druid.webp";
+import evokerIcon from "../assets/classes/classicon_evoker.webp";
+import hunterIcon from "../assets/classes/classicon_hunter.webp";
+import mageIcon from "../assets/classes/classicon_mage.webp";
+import monkIcon from "../assets/classes/classicon_monk.webp";
+import paladinIcon from "../assets/classes/classicon_paladin.webp";
+import priestIcon from "../assets/classes/classicon_priest.webp";
+import rogueIcon from "../assets/classes/classicon_rogue.webp";
+import shamanIcon from "../assets/classes/classicon_shaman.webp";
+import warlockIcon from "../assets/classes/classicon_warlock.webp";
+import warriorIcon from "../assets/classes/classicon_warrior.webp";
 
 // Icônes des classes de World of Warcraft.
 export const CLASS_ICONS = {
