@@ -135,121 +135,98 @@ def test_get_account_characters_rejects_invalid_nested_data(
 
 
 def test_get_character_media_prefers_inset(auth_service):
-    """Vérifie que le portrait inset est privilégié lorsqu'il existe."""
+    """Privilégie inset pour le portrait et récupère le rendu main."""
 
-    with patch(
-        "app.services.auth_service.httpx.get",
-    ) as mock_get:
-        # On simule une réponse Blizzard contenant les deux portraits.
+    with patch("app.services.auth_service.httpx.get") as mock_get:
         mock_get.return_value.json.return_value = {
             "assets": [
-                {
-                    "key": "avatar",
-                    "value": "https://example.com/avatar.jpg",
-                },
-                {
-                    "key": "inset",
-                    "value": "https://example.com/inset.jpg",
-                },
+                {"key": "avatar", "value": "https://example.com/avatar.jpg"},
+                {"key": "inset", "value": "https://example.com/inset.jpg"},
+                {"key": "main", "value": "https://example.com/main.jpg"},
             ],
         }
         mock_get.return_value.raise_for_status.return_value = None
 
         result = auth_service.get_character_media(
-            "fake-access-token",
-            "dalaran",
-            "Fastnfurieuz",
+            "fake-access-token", "dalaran", "Fastnfurieuz"
         )
 
-    assert result == "https://example.com/inset.jpg"
+    assert result == {
+        "portrait_url": "https://example.com/inset.jpg",
+        "main_art_url": "https://example.com/main.jpg",
+    }
 
 
 def test_get_character_media_falls_back_to_avatar(auth_service):
-    """Vérifie que le portrait avatar est utilisé sans inset."""
+    """Utilise avatar lorsque inset est absent."""
 
-    with patch(
-        "app.services.auth_service.httpx.get",
-    ) as mock_get:
-        # Cette fois, seul le portrait avatar est disponible.
+    with patch("app.services.auth_service.httpx.get") as mock_get:
         mock_get.return_value.json.return_value = {
             "assets": [
-                {
-                    "key": "avatar",
-                    "value": "https://example.com/avatar.jpg",
-                },
+                {"key": "avatar", "value": "https://example.com/avatar.jpg"},
+                {"key": "main", "value": "https://example.com/main.jpg"},
             ],
         }
         mock_get.return_value.raise_for_status.return_value = None
 
         result = auth_service.get_character_media(
-            "fake-access-token",
-            "dalaran",
-            "Fastnfurieuz",
+            "fake-access-token", "dalaran", "Fastnfurieuz"
         )
 
-    assert result == "https://example.com/avatar.jpg"
+    assert result == {
+        "portrait_url": "https://example.com/avatar.jpg",
+        "main_art_url": "https://example.com/main.jpg",
+    }
 
 
 def test_get_character_media_returns_none_without_available_assets(
     auth_service,
 ):
-    """Vérifie qu'aucune URL n'est renvoyée sans portrait exploitable."""
+    """Retourne des URL nulles si aucun média n'est disponible."""
 
-    with patch(
-        "app.services.auth_service.httpx.get",
-    ) as mock_get:
-        # Une liste d'assets vide ne fournit aucun portrait.
+    with patch("app.services.auth_service.httpx.get") as mock_get:
         mock_get.return_value.json.return_value = {"assets": []}
         mock_get.return_value.raise_for_status.return_value = None
 
         result = auth_service.get_character_media(
-            "fake-access-token",
-            "dalaran",
-            "Fastnfurieuz",
+            "fake-access-token", "dalaran", "Fastnfurieuz"
         )
 
-    assert result is None
+    assert result == {
+        "portrait_url": None,
+        "main_art_url": None,
+    }
 
 
 def test_get_character_media_uses_cache(auth_service):
-    """Vérifie qu'un portrait en cache évite un nouvel appel HTTP."""
+    """Le cache conserve les deux médias sans nouvel appel HTTP."""
 
     cache_key = ("dalaran", "fastnfurieuz")
-
-    # On garantit que ce test commence sans entrée préexistante.
     AuthService._character_media_cache.pop(cache_key, None)
 
-    with patch(
-        "app.services.auth_service.httpx.get",
-    ) as mock_get:
+    with patch("app.services.auth_service.httpx.get") as mock_get:
         mock_get.return_value.json.return_value = {
             "assets": [
-                {
-                    "key": "inset",
-                    "value": "https://example.com/inset.jpg",
-                },
+                {"key": "inset", "value": "https://example.com/inset.jpg"},
+                {"key": "main", "value": "https://example.com/main.jpg"},
             ],
         }
         mock_get.return_value.raise_for_status.return_value = None
 
-        # Premier appel : le portrait est récupéré et mis en cache.
         first_result = auth_service.get_character_media(
-            "fake-access-token",
-            "dalaran",
-            "Fastnfurieuz",
+            "fake-access-token", "dalaran", "Fastnfurieuz"
         )
-
-        # Deuxième appel : le résultat doit venir du cache.
         second_result = auth_service.get_character_media(
-            "fake-access-token",
-            "dalaran",
-            "Fastnfurieuz",
+            "fake-access-token", "dalaran", "Fastnfurieuz"
         )
 
-    assert first_result == "https://example.com/inset.jpg"
-    assert second_result == first_result
+    expected = {
+        "portrait_url": "https://example.com/inset.jpg",
+        "main_art_url": "https://example.com/main.jpg",
+    }
 
-    # Un seul appel HTTP doit avoir été effectué pour les deux demandes.
+    assert first_result == expected
+    assert second_result == expected
     mock_get.assert_called_once()
 
 
@@ -303,6 +280,61 @@ def test_get_character_profile_rejects_invalid_response(auth_service):
             match="Invalid Blizzard profile structure",
         ):
             auth_service.get_character_profile(
+                "fake-access-token",
+                "dalaran",
+                "Fastnfurieuz",
+            )
+
+
+def test_get_character_equipment_returns_equipment(auth_service):
+    """Vérifie que l'équipement Blizzard est correctement récupéré."""
+
+    expected_equipment = {
+        "equipped_items": [
+            {
+                "slot": {"type": "HEAD", "name": "Tête"},
+                "item": {"id": 12345},
+                "level": {"value": 250},
+            }
+        ]
+    }
+
+    with patch(
+        "app.services.auth_service.httpx.get",
+    ) as mock_get:
+        mock_get.return_value.json.return_value = expected_equipment
+        mock_get.return_value.raise_for_status.return_value = None
+
+        result = auth_service.get_character_equipment(
+            "fake-access-token",
+            "dalaran",
+            "Fastnfurieuz",
+        )
+
+    assert result == expected_equipment
+
+    # Vérifie l'endpoint, le namespace et l'authentification.
+    call_args = mock_get.call_args
+    assert call_args.args[0].endswith(
+        "/profile/wow/character/dalaran/fastnfurieuz/equipment"
+    )
+    assert call_args.kwargs["params"]["namespace"] == "profile-eu"
+    assert call_args.kwargs["headers"]["Authorization"] == (
+        "Bearer fake-access-token"
+    )
+
+
+def test_get_character_equipment_rejects_invalid_response(auth_service):
+    """Vérifie qu'une réponse sans liste d'objets est rejetée."""
+
+    with patch(
+        "app.services.auth_service.httpx.get",
+    ) as mock_get:
+        mock_get.return_value.json.return_value = {}
+        mock_get.return_value.raise_for_status.return_value = None
+
+        with pytest.raises(InvalidBlizzardProfileError):
+            auth_service.get_character_equipment(
                 "fake-access-token",
                 "dalaran",
                 "Fastnfurieuz",

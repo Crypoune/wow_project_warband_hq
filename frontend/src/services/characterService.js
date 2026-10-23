@@ -76,6 +76,30 @@ export async function getImportedCharacters() {
 }
 
 /**
+ * Récupère les détails d'un personnage importé.
+ *
+ * @param {number} characterId - Identifiant interne Warband HQ.
+ * @returns {Promise<object>} Les détails du personnage.
+ */
+export async function getCharacterDetails(characterId) {
+  const response = await fetch(`${API_URL}/api/characters/${characterId}`, {
+    credentials: "include",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+        data.detail?.message ||
+        "Unable to retrieve character details.",
+    );
+  }
+
+  return data.character;
+}
+
+/**
  * Met à jour le statut favori d'un personnage importé.
  *
  * @param {number} characterId - Identifiant interne du personnage.

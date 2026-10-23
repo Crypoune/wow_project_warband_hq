@@ -13,6 +13,7 @@
 
 @use "./components/buttons";
 @use "./components/cards";
+@use "./components/character-equipment";
 @use "./components/forms";
 
 // ========================================
@@ -32,4 +33,5 @@
 @use "./pages/login";
 @use "./pages/status";
 @use "./pages/warband";
+@use "./pages/character-details";
 @use "./pages/settings";

@@ -17,7 +17,14 @@ class AuthService:
 
     # Cache partagé entre les instances pour éviter de redemander les portraits.
     # La clé combine le royaume et le nom normalisé du personnage.
-    _character_media_cache: dict[tuple[str, str], str | None] = {}
+    _character_media_cache: dict[
+        tuple[str, str],
+        dict[str, str | None],
+    ] = {}
+
+    # Cache partagé des icônes d'objets pour éviter les appels répétés.
+    # L'URL de l'endpoint média Blizzard sert de clé.
+    _item_icon_cache: dict[str, str | None] = {}
 
     def __init__(self, settings: Settings):
         """Conserve la configuration nécessaire aux appels Blizzard."""
@@ -148,6 +155,182 @@ class AuthService:
 
         return profile
 
+
+    def get_character_equipment(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+    ) -> dict:
+        """Récupère l'équipement actuellement porté par un personnage WoW."""
+
+        # L'endpoint utilise le royaume et le nom normalisé du personnage.
+        url = (
+            f"https://{self.settings.blizzard_region}.api.blizzard.com"
+            f"/profile/wow/character/{realm_slug}/{character_name.lower()}"
+            "/equipment"
+        )
+
+        # On demande les données de profil, avec la région configurée
+        # et la langue française, comme pour les autres appels Blizzard.
+        response = httpx.get(
+            url,
+            params={
+                "namespace": f"profile-{self.settings.blizzard_region}",
+                "locale": "fr_FR",
+            },
+            headers={
+                "Authorization": f"Bearer {access_token}",
+            },
+            timeout=10.0,
+        )
+
+        # Une erreur HTTP est propagée à la couche appelante.
+        response.raise_for_status()
+
+        equipment = response.json()
+
+        # On vérifie la structure avant de transmettre les données.
+        # Une réponse inattendue ne doit pas être considérée comme valide.
+        if (
+            not isinstance(equipment, dict)
+            or not isinstance(equipment.get("equipped_items"), list)
+        ):
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard equipment structure"
+            )
+
+        return equipment
+
+
+    def _get_character_endpoint(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+        endpoint: str,
+    ) -> dict:
+        """Récupère les données d'un endpoint de profil de personnage."""
+
+        url = (
+            f"https://{self.settings.blizzard_region}.api.blizzard.com"
+            f"/profile/wow/character/{realm_slug}/{character_name.lower()}"
+            f"/{endpoint}"
+        )
+
+        response = httpx.get(
+            url,
+            params={
+                "namespace": f"profile-{self.settings.blizzard_region}",
+                "locale": "fr_FR",
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=10.0,
+        )
+        response.raise_for_status()
+
+        data = response.json()
+
+        if not isinstance(data, dict):
+            raise InvalidBlizzardProfileError(
+                f"Invalid Blizzard character {endpoint} structure"
+            )
+
+        return data
+
+
+    def get_character_specializations(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+    ) -> dict:
+        """Récupère les spécialisations d'un personnage."""
+
+        return self._get_character_endpoint(
+            access_token, realm_slug, character_name, "specializations"
+        )
+
+
+    def get_character_statistics(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+    ) -> dict:
+        """Récupère les statistiques de combat d'un personnage."""
+
+        return self._get_character_endpoint(
+            access_token, realm_slug, character_name, "statistics"
+        )
+
+
+    def get_character_achievements(
+        self,
+        access_token: str,
+        realm_slug: str,
+        character_name: str,
+    ) -> dict:
+        """Récupère les hauts faits d'un personnage."""
+
+        return self._get_character_endpoint(
+            access_token, realm_slug, character_name, "achievements"
+        )
+
+
+    def get_item_icon_url(
+        self,
+        access_token: str,
+        media_url: str,
+    ) -> str | None:
+        """Récupère l'URL de l'icône d'un objet WoW depuis son endpoint média Blizzard."""
+
+        # On réutilise l'icône si elle a déjà été récupérée.
+        if media_url in self._item_icon_cache:
+            return self._item_icon_cache[media_url]
+
+        response = httpx.get(
+            media_url,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+            },
+            timeout=10.0,
+        )
+        response.raise_for_status()
+
+        media = response.json()
+
+        if not isinstance(media, dict):
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard item media structure"
+            )
+
+        assets = media.get("assets", [])
+
+        if not isinstance(assets, list):
+            raise InvalidBlizzardProfileError(
+                "Invalid Blizzard item media assets"
+            )
+
+        icon_url = next(
+            (
+                asset["value"]
+                for asset in assets
+                if (
+                    isinstance(asset, dict)
+                    and asset.get("key") == "icon"
+                    and isinstance(asset.get("value"), str)
+                )
+            ),
+            None,
+        )
+
+        # On mémorise aussi l'absence d'icône pour éviter les appels répétés.
+        self._item_icon_cache[media_url] = icon_url
+
+        return icon_url
+
+
     def get_account_characters(self, access_token: str) -> list[dict]:
         """Récupère les personnages de tous les comptes WoW."""
 
@@ -239,16 +422,15 @@ class AuthService:
 
         return characters
 
+
     def get_character_media(
         self,
         access_token: str,
         realm_slug: str,
         character_name: str,
-    ) -> str | None:
-        """Récupère l'URL du portrait d'un personnage WoW."""
+    ) -> dict[str, str | None]:
+        """Récupère le portrait et le rendu principal d'un personnage WoW."""
 
-        # Le nom est normalisé en minuscules pour retrouver la même entrée
-        # du cache quelle que soit la casse utilisée lors de l'appel.
         cache_key = (realm_slug, character_name.lower())
 
         if cache_key in self._character_media_cache:
@@ -273,19 +455,14 @@ class AuthService:
         )
 
         response.raise_for_status()
-
         media = response.json()
-
-        # Une réponse sans assets exploitables ne fournit pas de portrait.
         assets = media.get("assets", [])
 
-        # On privilégie inset, puis avatar si inset n'est pas disponible.
-        preferred_keys = ("inset", "avatar")
-
-        avatar_url = next(
+        # On privilégie inset pour le portrait, puis avatar.
+        portrait_url = next(
             (
                 asset.get("value")
-                for key in preferred_keys
+                for key in ("inset", "avatar")
                 for asset in assets
                 if (
                     isinstance(asset, dict)
@@ -296,8 +473,25 @@ class AuthService:
             None,
         )
 
-        # On mémorise aussi l'absence de portrait pour éviter de répéter
-        # inutilement la même requête pendant la durée de vie du processus.
-        self._character_media_cache[cache_key] = avatar_url
+        main_art_url = next(
+            (
+                asset.get("value")
+                for key in ("main-raw", "main")
+                for asset in assets
+                if (
+                    isinstance(asset, dict)
+                    and asset.get("key") == key
+                    and asset.get("value")
+                )
+            ),
+            None,
+        )
 
-        return avatar_url
+        result = {
+            "portrait_url": portrait_url,
+            "main_art_url": main_art_url,
+        }
+
+        self._character_media_cache[cache_key] = result
+
+        return result

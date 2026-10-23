@@ -3,6 +3,7 @@ import AppHeader from "./components/layout/AppHeader.jsx";
 import Sidebar from "./components/layout/Sidebar.jsx";
 import Overview from "./pages/Overview.jsx";
 import MyWarband from "./pages/MyWarband.jsx";
+import CharacterDetails from "./pages/CharacterDetails.jsx";
 import Settings from "./pages/Settings.jsx";
 
 // Adresse commune du backend FastAPI.
@@ -40,6 +41,8 @@ function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   const [activePage, setActivePage] = useState("overview");
+
+  const [selectedCharacterId, setSelectedCharacterId] = useState(null);
 
   // Indique si la collection importée est en cours de chargement.
   const [loadingImportedCharacters, setLoadingImportedCharacters] =
@@ -115,6 +118,17 @@ function App() {
         err.message || "Unable to update character favorite. Please try again.",
       );
     }
+  };
+
+  const handleViewCharacterDetails = (characterId) => {
+    setSelectedCharacterId(characterId);
+    setActivePage("character-details");
+    setError("");
+  };
+
+  const handleBackToWarband = () => {
+    setActivePage("warband");
+    setSelectedCharacterId(null);
   };
 
   // Vérifie si l'utilisateur possède déjà une session valide.
@@ -381,12 +395,21 @@ function App() {
                 importedCharacters={importedCharacters}
                 loadingImportedCharacters={loadingImportedCharacters}
                 onToggleFavorite={handleToggleFavorite}
+                onViewDetails={handleViewCharacterDetails}
                 getCharacterTags={getCharacterTags}
                 assignCharacterTag={assignCharacterTag}
                 removeCharacterTag={removeCharacterTag}
                 getTags={getTags}
               />
             )}
+
+            {activePage === "character-details" &&
+              selectedCharacterId !== null && (
+                <CharacterDetails
+                  characterId={selectedCharacterId}
+                  onBack={handleBackToWarband}
+                />
+              )}
 
             {activePage === "settings" && <Settings user={user} />}
           </>
