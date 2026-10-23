@@ -223,6 +223,10 @@ Implement the detailed character view and selected progression information.
 - Add the required database structures for synchronization metadata.
 - Implement error handling for detailed character data.
 - Add automated tests for character details and progression.
+- Include assigned character tags in the character listing and character details API responses.
+- Retrieve character tag assignments through a grouped query to avoid per-character requests.
+- Preserve existing authentication and character ownership checks for tag operations.
+- Add automated tests for tag retrieval, assignment and removal, and unauthorized access.
 
 ### Frontend Activities
 
@@ -233,11 +237,16 @@ Implement the detailed character view and selected progression information.
 - Display selected progression information.
 - Connect the Character Details page to the backend.
 - Display loading and error states.
+- Display assigned tag badges on My Warband character cards without tag management controls.
+- Move tag assignment and removal controls to the Character Details page.
+- Load the available tag catalogue only when required for tag management.
+- Verify tag management behavior and loading states.
 
 ### User Stories
 
 - US-04 — Main Character Information
 - US-06 — Detailed Character View
+- US-20 — Character Tag Management & Performance
 
 ### Dependencies
 
@@ -246,7 +255,7 @@ Implement the detailed character view and selected progression information.
 
 ### Deliverable
 
-Users can select a character and view a detailed overview of its information and progression.
+Users can select a character and view a detailed overview of its information and progression. Character tags remain visible in the Warband overview and can be managed from the character details page, with unnecessary per-character tag requests eliminated.
 
 ---
 
