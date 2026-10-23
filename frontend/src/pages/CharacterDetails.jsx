@@ -3,7 +3,12 @@ import { ArrowLeft, Shield, Trophy, Heart, Zap, Activity } from "lucide-react";
 import { CLASS_COLORS, CLASS_ICONS } from "../data/wowClasses";
 import { RACE_ICONS } from "../data/wowRaces";
 import { FACTION_ICONS } from "../data/wowFactions";
-import { getCharacterDetails } from "../services/characterService.js";
+import {
+  getCharacterDetails,
+  getTags,
+  assignCharacterTag,
+  removeCharacterTag,
+} from "../services/characterService.js";
 import CharacterEquipment from "../components/character/CharacterEquipment.jsx";
 
 const MAIN_STATS = [
@@ -97,10 +102,17 @@ function StatGroup({ title, icon: Icon, stats, values }) {
   );
 }
 
-function CharacterDetails({ characterId, onBack }) {
+function CharacterDetails({ characterId, onBack, onUpdateTags }) {
   const [character, setCharacter] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [availableTags, setAvailableTags] = useState([]);
+  const [selectedTagId, setSelectedTagId] = useState("");
+  const [loadingTags, setLoadingTags] = useState(true);
+  const [tagActionLoading, setTagActionLoading] = useState(false);
+  const [tagError, setTagError] = useState("");
+  const [tagSuccess, setTagSuccess] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -130,6 +142,104 @@ function CharacterDetails({ characterId, onBack }) {
     };
   }, [characterId]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTags() {
+      setLoadingTags(true);
+      setTagError("");
+
+      try {
+        const result = await getTags();
+
+        if (!cancelled) {
+          setAvailableTags(result);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setTagError(err.message || "Unable to retrieve available tags.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingTags(false);
+        }
+      }
+    }
+
+    loadTags();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleAssignTag() {
+    if (!selectedTagId || tagActionLoading) return;
+
+    const tagId = Number(selectedTagId);
+    const tag = availableTags.find((item) => item.id === tagId);
+
+    if (!tag || character.tags?.some((item) => item.id === tagId)) return;
+
+    setTagActionLoading(true);
+    setTagError("");
+    setTagSuccess("");
+
+    try {
+      await assignCharacterTag(characterId, tagId);
+
+      const updatedTags = [...(character.tags ?? []), tag].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+
+      setCharacter((current) => ({
+        ...current,
+        tags: updatedTags,
+      }));
+
+      onUpdateTags?.(characterId, updatedTags);
+
+      setSelectedTagId("");
+      setTagSuccess(`Tag « ${tag.name} » ajouté.`);
+    } catch (err) {
+      setTagError(err.message || "Unable to assign tag.");
+    } finally {
+      setTagActionLoading(false);
+    }
+  }
+
+  async function handleRemoveTag(tagId) {
+    if (tagActionLoading) return;
+
+    const tag = character.tags?.find((item) => item.id === tagId);
+    if (!tag) return;
+
+    setTagActionLoading(true);
+    setTagError("");
+    setTagSuccess("");
+
+    try {
+      await removeCharacterTag(characterId, tagId);
+
+      const updatedTags = (character.tags ?? []).filter(
+        (item) => item.id !== tagId,
+      );
+
+      setCharacter((current) => ({
+        ...current,
+        tags: updatedTags,
+      }));
+
+      onUpdateTags?.(characterId, updatedTags);
+
+      setTagSuccess(`Tag « ${tag.name} » retiré.`);
+    } catch (err) {
+      setTagError(err.message || "Unable to remove tag.");
+    } finally {
+      setTagActionLoading(false);
+    }
+  }
+
   if (loading || error || !character) {
     const hasError = Boolean(error || (!loading && !character));
 
@@ -157,6 +267,12 @@ function CharacterDetails({ characterId, onBack }) {
       </section>
     );
   }
+
+  const assignedTags = character.tags ?? [];
+  const assignedTagIds = new Set(assignedTags.map((tag) => tag.id));
+  const unassignedTags = availableTags.filter(
+    (tag) => !assignedTagIds.has(tag.id),
+  );
 
   const classColor = CLASS_COLORS[character.class] ?? "#D7AA50";
   const classIcon = CLASS_ICONS[character.class];
@@ -240,6 +356,70 @@ function CharacterDetails({ characterId, onBack }) {
           </div>
         </div>
       </header>
+
+      <section
+        className="character-tags"
+        aria-labelledby="character-tags-title"
+      >
+        <h2 id="character-tags-title">Tags du personnage</h2>
+
+        <div className="character-tags-list">
+          {assignedTags.length > 0 ? (
+            assignedTags.map((tag) => (
+              <span className="character-tag" key={tag.id}>
+                {tag.name}
+                <button
+                  type="button"
+                  aria-label={`Retirer le tag ${tag.name}`}
+                  title={`Retirer le tag ${tag.name}`}
+                  disabled={tagActionLoading}
+                  onClick={() => handleRemoveTag(tag.id)}
+                >
+                  ×
+                </button>
+              </span>
+            ))
+          ) : (
+            <span className="character-tags-empty">Aucun tag attribué.</span>
+          )}
+        </div>
+
+        <div className="character-tags-actions">
+          <select
+            aria-label="Choisir un tag à ajouter"
+            value={selectedTagId}
+            onChange={(event) => setSelectedTagId(event.target.value)}
+            disabled={
+              loadingTags || tagActionLoading || unassignedTags.length === 0
+            }
+          >
+            <option value="">
+              {loadingTags
+                ? "Chargement des tags..."
+                : unassignedTags.length === 0
+                  ? "Tous les tags sont attribués"
+                  : "Sélectionner un tag"}
+            </option>
+
+            {unassignedTags.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {tag.name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            disabled={!selectedTagId || tagActionLoading || loadingTags}
+            onClick={handleAssignTag}
+          >
+            {tagActionLoading ? "Mise à jour..." : "Ajouter"}
+          </button>
+        </div>
+
+        {tagError && <p role="alert">{tagError}</p>}
+        {tagSuccess && <p role="status">{tagSuccess}</p>}
+      </section>
 
       <div className="character-details-content">
         <div className="character-details-armory">

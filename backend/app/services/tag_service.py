@@ -233,3 +233,48 @@ class TagService:
                 {"id": tag.id, "name": tag.name}
                 for tag in tags
             ]
+
+
+    def get_tags_for_characters(
+        self,
+        user_id: int,
+        character_ids: list[int],
+    ) -> dict[int, list[dict]]:
+        """Récupère les tags de plusieurs personnages en une requête groupée."""
+        if not character_ids:
+            return {}
+
+        with SessionLocal() as db:
+            statement = (
+                select(
+                    CharacterTag.character_id,
+                    Tag.id,
+                    Tag.name,
+                )
+                .join(
+                    CharacterTag,
+                    CharacterTag.tag_id == Tag.id,
+                )
+                .join(
+                    Character,
+                    Character.id == CharacterTag.character_id,
+                )
+                .where(
+                    Character.user_id == user_id,
+                    Character.id.in_(character_ids),
+                )
+                .order_by(Tag.name)
+            )
+
+            rows = db.execute(statement).all()
+
+            tags_by_character: dict[int, list[dict]] = {
+                character_id: [] for character_id in character_ids
+            }
+
+            for character_id, tag_id, tag_name in rows:
+                tags_by_character[character_id].append(
+                    {"id": tag_id, "name": tag_name}
+                )
+
+            return tags_by_character

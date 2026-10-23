@@ -444,3 +444,44 @@ def test_delete_tag_rejects_missing_tag(service):
 
     db.delete.assert_not_called()
     db.commit.assert_not_called()
+
+
+def test_get_tags_for_characters_groups_tags_by_character(service):
+    """Récupère les tags de plusieurs personnages en une requête."""
+    db = MagicMock()
+    db.execute.return_value.all.return_value = [
+        (1, 10, "Main"),
+        (1, 11, "Raid"),
+        (2, 10, "Main"),
+    ]
+
+    with patch("app.services.tag_service.SessionLocal") as session_local:
+        session_local.return_value.__enter__.return_value = db
+
+        result = service.get_tags_for_characters(
+            user_id=42,
+            character_ids=[1, 2, 3],
+        )
+
+    assert result == {
+        1: [
+            {"id": 10, "name": "Main"},
+            {"id": 11, "name": "Raid"},
+        ],
+        2: [{"id": 10, "name": "Main"}],
+        3: [],
+    }
+
+    db.execute.assert_called_once()
+
+
+def test_get_tags_for_characters_returns_empty_dict_without_ids(service):
+    """Aucune requête SQL n'est exécutée sans identifiant."""
+    with patch("app.services.tag_service.SessionLocal") as session_local:
+        result = service.get_tags_for_characters(
+            user_id=42,
+            character_ids=[],
+        )
+
+    assert result == {}
+    session_local.assert_not_called()
