@@ -185,20 +185,128 @@
 
 @media (max-width: vars.$breakpoint-mobile) {
   .app-sidebar {
-    top: vars.$header-height-mobile;
-    padding: 16px 8px;
+    display: none;
+  }
+}
 
-    &.expanded {
-      width: vars.$sidebar-width-expanded-mobile;
-    }
+// ========================================
+// MOBILE NAVIGATION
+// ========================================
 
-    &.collapsed {
-      width: vars.$sidebar-width-collapsed-mobile;
-    }
+.mobile-menu-overlay {
+  position: fixed;
+  inset: vars.$header-height-mobile 0 0;
+  z-index: 1100;
+
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+
+  animation: mobile-overlay-enter 180ms ease-out;
+}
+
+.mobile-menu {
+  position: fixed;
+  top: vars.$header-height-mobile;
+  right: 0;
+  bottom: 0;
+  z-index: 1101;
+
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-lg;
+
+  width: min(82vw, 320px);
+  padding: 20px 16px;
+
+  background: rgba(9, 13, 24, 0.98);
+  border-left: 1px solid rgba(215, 170, 80, 0.25);
+  box-shadow: -12px 0 36px rgba(0, 0, 0, 0.3);
+
+  animation: mobile-menu-enter 220ms ease-out;
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 14px;
+
+  color: vars.$color-accent-light;
+  font-size: 14px;
+  font-weight: 600;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-menu-close {
+  display: grid;
+  place-items: center;
+
+  width: 36px;
+  height: 36px;
+
+  color: vars.$color-text-primary;
+  font-size: 26px;
+
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+.mobile-menu-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+}
+
+.mobile-menu-navigation .sidebar-link {
+  gap: 14px;
+  min-height: 48px;
+  padding: 12px;
+}
+
+.mobile-menu-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-top: auto;
+  padding: 14px 8px 4px;
+
+  color: vars.$color-text-muted;
+  font-size: 11px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+@keyframes mobile-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
   }
 
-  .sidebar-link {
-    gap: 10px;
-    padding: 10px;
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mobile-overlay-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu,
+  .mobile-menu-overlay {
+    animation: none;
   }
 }

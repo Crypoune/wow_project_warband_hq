@@ -27,9 +27,7 @@
 
   border-top: 1px solid #ffffff12;
 
-  transition:
-    margin-left vars.$transition-layout,
-    width vars.$transition-layout;
+  transition: none;
 }
 
 // ========================================

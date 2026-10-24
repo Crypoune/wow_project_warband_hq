@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+
+import CharacterFilters from "../components/warband/CharacterFilters.jsx";
 
 // Importation des icônes de factions.
 import { CLASS_ICONS, CLASS_COLORS } from "../data/wowClasses";
@@ -97,7 +99,7 @@ function CharacterTags({ tags = [] }) {
             </span>
           ))
         ) : (
-          <span className="character-tags-empty">No tags</span>
+          <span className="character-tags-empty">No tag</span>
         )}
       </div>
     </div>
@@ -259,121 +261,22 @@ function MyWarband({
       </div>
 
       {/* Bouton d'ouverture et de fermeture des filtres. */}
-      <div className="filter-toolbar">
-        <button
-          type="button"
-          className="filter-toggle-button"
-          onClick={() => setShowFilters((previous) => !previous)}
-          aria-expanded={showFilters}
-          aria-controls="character-filters"
-        >
-          <SlidersHorizontal size={17} strokeWidth={1.9} aria-hidden="true" />
-
-          <span>Filters</span>
-
-          <span className="filter-chevron" aria-hidden="true">
-            <ChevronDown
-              className={`filter-chevron-icon ${
-                showFilters ? "inactive" : "active"
-              }`}
-              size={18}
-              strokeWidth={2}
-            />
-            <ChevronUp
-              className={`filter-chevron-icon ${
-                showFilters ? "active" : "inactive"
-              }`}
-              size={18}
-              strokeWidth={2}
-            />
-          </span>
-        </button>
-      </div>
-
-      {/* Panneau de filtres animé. */}
-      <div
-        className={`character-filters ${showFilters ? "open" : ""}`}
-        id="character-filters"
-        aria-hidden={!showFilters}
-        inert={!showFilters}
-      >
-        <h3>Search &amp; organize</h3>
-
-        <div className="filter-field">
-          <label htmlFor="character-search">Search characters</label>
-          <input
-            id="character-search"
-            type="search"
-            placeholder="Name, race, class, realm..."
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-          />
-        </div>
-
-        <div className="filter-field">
-          <label htmlFor="character-class-filter">Class</label>
-          <select
-            id="character-class-filter"
-            value={selectedClass}
-            onChange={(event) => setSelectedClass(event.target.value)}
-          >
-            <option value="all">All classes</option>
-            {availableClasses.map((characterClass) => (
-              <option key={characterClass} value={characterClass}>
-                {characterClass}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="filter-field">
-          <label htmlFor="character-faction-filter">Faction</label>
-          <select
-            id="character-faction-filter"
-            value={selectedFaction}
-            onChange={(event) => setSelectedFaction(event.target.value)}
-          >
-            <option value="all">All factions</option>
-            <option value="Alliance">Alliance</option>
-            <option value="Horde">Horde</option>
-          </select>
-        </div>
-
-        <div className="filter-field favorite-filter">
-          <label htmlFor="favorites-only">
-            <span>Show favorites only</span>
-            <input
-              id="favorites-only"
-              type="checkbox"
-              checked={favoritesOnly}
-              onChange={(event) => setFavoritesOnly(event.target.checked)}
-            />
-          </label>
-        </div>
-
-        <div className="filter-field">
-          <label htmlFor="character-sort">Sort by</label>
-          <select
-            id="character-sort"
-            value={sortBy}
-            onChange={(event) => setSortBy(event.target.value)}
-          >
-            <option value="name-asc">Name — A to Z</option>
-            <option value="name-desc">Name — Z to A</option>
-            <option value="level-desc">Level — Highest first</option>
-            <option value="level-asc">Level — Lowest first</option>
-            <option value="realm-asc">Realm — A to Z</option>
-          </select>
-        </div>
-
-        <button
-          type="button"
-          className="filter-reset-button"
-          onClick={resetFilters}
-        >
-          Reset filters
-        </button>
-      </div>
+      <CharacterFilters
+        showFilters={showFilters}
+        onToggleFilters={() => setShowFilters((previous) => !previous)}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        availableClasses={availableClasses}
+        selectedClass={selectedClass}
+        onClassChange={setSelectedClass}
+        selectedFaction={selectedFaction}
+        onFactionChange={setSelectedFaction}
+        favoritesOnly={favoritesOnly}
+        onFavoritesOnlyChange={setFavoritesOnly}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        onResetFilters={resetFilters}
+      />
 
       {loadingImportedCharacters ? (
         <div className="status-panel">

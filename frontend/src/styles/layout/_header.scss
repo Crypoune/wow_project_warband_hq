@@ -71,6 +71,16 @@
 }
 
 // ========================================
+// HEADER ACTIONS
+// ========================================
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// ========================================
 // LOGOUT BUTTON
 // ========================================
 
@@ -95,6 +105,44 @@
     color: #f2c66d;
     background: rgba(215, 170, 80, 0.08);
     border-color: rgba(215, 170, 80, 0.45);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f2c66d;
+    outline-offset: 3px;
+  }
+}
+
+// ========================================
+// MOBILE MENU TOGGLE
+// ========================================
+
+.mobile-menu-toggle {
+  display: none;
+  place-items: center;
+
+  width: 42px;
+  height: 42px;
+  padding: 0;
+
+  color: #f2c66d;
+  font-size: 24px;
+  line-height: 1;
+
+  background: rgba(215, 170, 80, 0.08);
+  border: 1px solid rgba(215, 170, 80, 0.3);
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  transition:
+    background vars.$transition-fast,
+    border-color vars.$transition-fast,
+    color vars.$transition-fast;
+
+  &:hover {
+    background: rgba(215, 170, 80, 0.16);
+    border-color: rgba(215, 170, 80, 0.55);
   }
 
   &:focus-visible {
@@ -135,5 +183,13 @@
   .logout-button {
     padding: 8px 10px;
     font-size: 12px;
+  }
+
+  .mobile-menu-toggle {
+    display: grid;
+  }
+
+  .header-actions {
+    gap: 8px;
   }
 }

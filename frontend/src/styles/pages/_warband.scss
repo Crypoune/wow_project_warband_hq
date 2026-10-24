@@ -354,22 +354,26 @@
   width: 100%;
   min-width: 0;
   overflow: hidden;
+
   max-height: 0;
   opacity: 0;
   padding: 0 vars.$spacing-lg;
   margin-bottom: 0;
+
   border: 1px solid transparent;
   border-radius: 10px;
   background: vars.$color-surface;
+
   visibility: hidden;
   pointer-events: none;
+
   transition:
-    max-height vars.$transition-layout,
-    opacity vars.$transition-layout,
-    padding vars.$transition-layout,
-    margin vars.$transition-layout,
-    border-color vars.$transition-layout,
-    visibility 0s linear 220ms;
+    max-height 180ms ease-out,
+    opacity 140ms ease-out,
+    padding 180ms ease-out,
+    margin-bottom 180ms ease-out,
+    border-color 140ms ease-out,
+    visibility 0s linear 180ms;
 
   h3 {
     grid-column: 1 / -1;
@@ -416,6 +420,7 @@
     border: 1px solid vars.$color-border-accent;
     border-radius: 6px;
     cursor: pointer;
+
     transition:
       color vars.$transition-fast,
       background-color vars.$transition-fast;
@@ -436,15 +441,17 @@
     opacity: 1;
     padding: vars.$spacing-lg;
     margin-bottom: vars.$spacing-lg;
+
     border-color: vars.$color-border;
     visibility: visible;
     pointer-events: auto;
+
     transition:
-      max-height vars.$transition-layout,
-      opacity vars.$transition-layout,
-      padding vars.$transition-layout,
-      margin vars.$transition-layout,
-      border-color vars.$transition-layout,
+      max-height 180ms ease-out,
+      opacity 140ms ease-out,
+      padding 180ms ease-out,
+      margin-bottom 180ms ease-out,
+      border-color 140ms ease-out,
       visibility 0s;
   }
 }

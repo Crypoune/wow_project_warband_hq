@@ -58,9 +58,7 @@
   padding-top: 0;
   padding-bottom: 48px;
 
-  transition:
-    margin-left vars.$transition-layout,
-    width vars.$transition-layout;
+  transition: none;
 }
 
 // ========================================
@@ -69,16 +67,16 @@
 
 @media (max-width: vars.$breakpoint-mobile) {
   .app-page {
-    --sidebar-width: #{vars.$sidebar-width-expanded-mobile};
-
-    &.sidebar-collapsed {
-      --sidebar-width: #{vars.$sidebar-width-collapsed-mobile};
-    }
+    --sidebar-width: 0px;
 
     padding: 88px 14px 18px;
   }
 
   .app-content {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
     padding-top: 0;
   }
 }
