@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import AppHeader from "./components/layout/AppHeader.jsx";
 import Sidebar from "./components/layout/Sidebar.jsx";
+import MobileMenu from "./components/layout/MobileMenu.jsx";
 import Overview from "./pages/Overview.jsx";
 import MyWarband from "./pages/MyWarband.jsx";
 import CharacterDetails from "./pages/CharacterDetails.jsx";
@@ -32,6 +33,8 @@ function App() {
   const [importedCharacters, setImportedCharacters] = useState([]);
 
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [activePage, setActivePage] = useState("overview");
 
@@ -318,6 +321,7 @@ function App() {
         user={user}
         onLogout={handleLogout}
         onLogin={handleBlizzardLogin}
+        onMenuToggle={() => setIsMobileMenuOpen((previous) => !previous)}
       />
 
       <Sidebar
@@ -326,6 +330,22 @@ function App() {
         activeItem={activePage}
         onNavigate={setActivePage}
       />
+
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-menu-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {isMobileMenuOpen && (
+        <MobileMenu
+          activeItem={activePage}
+          onNavigate={setActivePage}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       <section className="app-content">
         {loading ? (
