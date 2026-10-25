@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import ConfirmDialog from "./components/ConfirmDialog.jsx";
 import AppHeader from "./components/layout/AppHeader.jsx";
 import Sidebar from "./components/layout/Sidebar.jsx";
 import MobileMenu from "./components/layout/MobileMenu.jsx";
@@ -11,7 +12,11 @@ import Settings from "./pages/Settings.jsx";
 import { API_URL } from "./services/api.js";
 
 // Fonctions dédiées à l'authentification auprès du backend.
-import { getCurrentUser, logout } from "./services/authService.js";
+import {
+  getCurrentUser,
+  logout,
+  switchAccount,
+} from "./services/authService.js";
 
 // Fonctions dédiées à la récupération des personnages.
 import {
@@ -27,6 +32,7 @@ function App() {
   const [error, setError] = useState("");
   const [characters, setCharacters] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false);
   const [loadingCharacters, setLoadingCharacters] = useState(false);
 
   // Personnages déjà importés dans Warband HQ.
@@ -45,6 +51,7 @@ function App() {
     useState(false);
   const [importing, setImporting] = useState(false);
   const [success, setSuccess] = useState("");
+  const [authNotice, setAuthNotice] = useState(null);
 
   const fetchAvailableCharacters = useCallback(async () => {
     setLoadingCharacters(true);
@@ -151,9 +158,24 @@ function App() {
         // Une session valide nous fournit les informations de l'utilisateur.
         setUser(data);
 
-        // Après le retour de Blizzard, on retire le paramètre "auth" de l'URL.
+        // Traite le résultat OAuth avant de nettoyer l'URL.
         const url = new URL(window.location.href);
+        const authStatus = url.searchParams.get("auth");
 
+        if (authStatus === "switch_same_account") {
+          setAuthNotice({
+            type: "error",
+            message:
+              "Battle.net returned the same account. Please choose another account to switch.",
+          });
+        } else if (authStatus === "switch_success") {
+          setAuthNotice({
+            type: "success",
+            message: "Battle.net account switched successfully.",
+          });
+        }
+
+        // Retire le paramètre après son traitement.
         if (url.searchParams.has("auth")) {
           url.searchParams.delete("auth");
           window.history.replaceState({}, "", url);
@@ -224,6 +246,73 @@ function App() {
       setError(err.message || "Unable to log out. Please try again.");
     }
   };
+
+  // Ouvre la modale de confirmation du changement de compte.
+  const handleSwitchAccount = () => {
+    setError("");
+    setSuccess("");
+    setAuthNotice(null);
+    setIsSwitchModalOpen(true);
+  };
+
+  // Lance le changement de compte après confirmation.
+  const confirmSwitchAccount = async () => {
+    setIsSwitchModalOpen(false);
+
+    // Ouvre un onglet immédiatement, avant la requête asynchrone.
+    const logoutWindow = window.open("about:blank", "_blank");
+
+    if (!logoutWindow) {
+      setError(
+        "The Battle.net logout tab was blocked. Please allow pop-ups and try again.",
+      );
+      return;
+    }
+
+    // Empêche le nouvel onglet d'accéder à la fenêtre d'origine.
+    logoutWindow.opener = null;
+
+    try {
+      // Prépare le changement sans supprimer la session actuelle.
+      const data = await switchAccount();
+
+      if (!data?.battlenet_logout_url) {
+        throw new Error("Battle.net logout URL is missing.");
+      }
+
+      // Lance la déconnexion Battle.net dans le nouvel onglet.
+      logoutWindow.location.href = data.battlenet_logout_url;
+
+      // Réinitialise les données affichées dans Warband HQ.
+      // La session serveur sera remplacée après le callback OAuth.
+      resetUserData();
+    } catch (err) {
+      logoutWindow.close();
+
+      setError(
+        err.message || "Unable to switch Battle.net account. Please try again.",
+      );
+    }
+  };
+
+  // Ferme la modale de changement de compte avec la touche Échap.
+  useEffect(() => {
+    if (!isSwitchModalOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsSwitchModalOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSwitchModalOpen]);
 
   // Ajoute un personnage à la sélection ou l'en retire s'il est déjà sélectionné.
   const toggleCharacter = (characterId) => {
@@ -321,6 +410,7 @@ function App() {
         user={user}
         onLogout={handleLogout}
         onLogin={handleBlizzardLogin}
+        onSwitchAccount={handleSwitchAccount}
         onMenuToggle={() => setIsMobileMenuOpen((previous) => !previous)}
       />
 
@@ -444,12 +534,38 @@ function App() {
             {success}
           </p>
         )}
+
+        {authNotice && (
+          <p
+            className={`feedback-message ${
+              authNotice.type === "error" ? "error-message" : "success-message"
+            }`}
+            role={authNotice.type === "error" ? "alert" : "status"}
+          >
+            {authNotice.message}
+          </p>
+        )}
       </section>
 
       <footer className="page-footer">
         <span>WARBAND HQ</span>
         <span>BUILT FOR YOUR ADVENTURE IN AZEROTH</span>
       </footer>
+
+      {isSwitchModalOpen && (
+        <ConfirmDialog
+          title="Switch Battle.net account"
+          message={
+            "Warband HQ will open Battle.net logout in a new tab.\n\n" +
+            "After signing out there, return to this tab and click " +
+            '"Log in with Battle.net" to continue with another account.'
+          }
+          confirmLabel="Continue"
+          cancelLabel="Cancel"
+          onConfirm={confirmSwitchAccount}
+          onCancel={() => setIsSwitchModalOpen(false)}
+        />
+      )}
     </main>
   );
 }

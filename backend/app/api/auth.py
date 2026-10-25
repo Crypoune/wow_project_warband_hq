@@ -33,6 +33,27 @@ def login(request: Request):
     # Redirige le navigateur vers Blizzard.
     return RedirectResponse(url=authorization_url)
 
+@router.post("/switch")
+def switch_account(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    """Prépare le changement de compte Battle.net."""
+
+    # Mémorise le compte actuel pour le comparer au compte
+    # obtenu après la prochaine authentification OAuth.
+    request.session["switched_from_account_id"] = str(
+        current_user.blizzard_account_id
+    )
+
+    # La session Warband HQ reste active à ce stade.
+    # Le callback OAuth remplacera cette session uniquement
+    # après la réussite de la nouvelle authentification.
+    return {
+        "message": "Battle.net account switch initiated",
+        "battlenet_logout_url": auth_service.get_battlenet_logout_url(),
+    }
+
 @router.get("/callback")
 def callback(request: Request, code: str, state: str):
     # Récupère le state généré avant la redirection vers Blizzard.
@@ -54,6 +75,16 @@ def callback(request: Request, code: str, state: str):
 
     # Supprime le state temporaire après sa validation.
     request.session.pop("oauth_state", None)
+
+	# Mémorise le compte et la session actuels avant leur remplacement.
+    switched_from_account_id = request.session.get(
+        "switched_from_account_id"
+    )
+    old_session_token = (
+        request.session.get("session_token")
+        if switched_from_account_id is not None
+        else None
+    )
 
     try:
         # Échange le code temporaire reçu de Blizzard contre un access token.
@@ -114,6 +145,17 @@ def callback(request: Request, code: str, state: str):
                 # Actualise la date de connexion de l'utilisateur existant.
                 user.last_login = now
 
+            # Recherche l'ancienne session uniquement pendant un changement.
+            old_auth_session = None
+
+            if old_session_token is not None:
+                old_auth_session = db.scalar(
+                    select(AuthenticationSession).where(
+                        AuthenticationSession.session_token
+                        == old_session_token
+                    )
+                )
+
             # Génère un identifiant aléatoire distinct du token Blizzard.
             session_token = secrets.token_urlsafe(32)
 
@@ -126,7 +168,12 @@ def callback(request: Request, code: str, state: str):
             )
             db.add(auth_session)
 
-            # Valide les modifications en base de données.
+            # Supprime l'ancienne session dans la même transaction.
+            # Elle reste donc en base jusqu'à la validation de la nouvelle.
+            if old_auth_session is not None:
+                db.delete(old_auth_session)
+
+            # Enregistre le remplacement de session en une seule transaction.
             db.commit()
 
         # Efface les données OAuth temporaires du cookie.
@@ -160,9 +207,31 @@ def callback(request: Request, code: str, state: str):
             detail={"message": "Unable to create authentication session"},
         )
 
-    # Redirige le navigateur vers le frontend après la connexion.
+    # Détermine le résultat de l'authentification.
+    auth_status = "success"
+
+    if switched_from_account_id is not None:
+        if str(switched_from_account_id) == str(blizzard_account_id):
+            auth_status = "switch_same_account"
+        else:
+            auth_status = "switch_success"
+
+    # Redirige le navigateur vers le frontend avec le résultat.
     return RedirectResponse(
-        url="http://127.0.0.1:5173/?auth=success",
+        url=f"http://127.0.0.1:5173/?auth={auth_status}",
+        status_code=303,
+    )
+
+    # Pendant un changement, Blizzard peut reconnecter le même compte.
+    if (
+        switched_from_account_id is not None
+        and str(switched_from_account_id) == str(blizzard_account_id)
+    ):
+        auth_status = "switch_same_account"
+
+    # Redirige le navigateur vers le frontend avec le résultat.
+    return RedirectResponse(
+        url=f"http://127.0.0.1:5173/?auth={auth_status}",
         status_code=303,
     )
 

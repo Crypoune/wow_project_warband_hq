@@ -53,6 +53,16 @@ class AuthService:
         # transmis dans l'URL, notamment le redirect_uri et le state.
         return f"https://oauth.battle.net/authorize?{urlencode(params)}"
 
+
+    def get_battlenet_logout_url(self) -> str:
+        """Construit l'URL de déconnexion du site Battle.net."""
+
+        return (
+            f"https://{self.settings.blizzard_region}"
+            ".battle.net/login/logout"
+        )
+
+
     def exchange_code_for_token(self, code: str) -> dict:
         """Échange le code OAuth reçu contre un access token Blizzard."""
 
