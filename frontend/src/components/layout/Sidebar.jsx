@@ -1,17 +1,17 @@
 const navigationItems = [
   {
     id: "overview",
-    label: "Overview",
+    label: "Vue d'ensemble",
     icon: "⌂",
   },
   {
     id: "warband",
-    label: "My Warband",
+    label: "Mon bataillon",
     icon: "⚔",
   },
   {
     id: "settings",
-    label: "Settings",
+    label: "Paramètres",
     icon: "⚙",
   },
 ];
@@ -20,13 +20,17 @@ function Sidebar({ isExpanded, onToggle, activeItem, onNavigate }) {
   return (
     <aside
       className={`app-sidebar ${isExpanded ? "expanded" : "collapsed"}`}
-      aria-label="Main navigation"
+      aria-label="Navigation principale"
     >
       <button
         className="sidebar-toggle"
         type="button"
         onClick={onToggle}
-        aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+        aria-label={
+          isExpanded
+            ? "Réduire la barre latérale"
+            : "Développer la barre latérale"
+        }
         aria-expanded={isExpanded}
       >
         <span aria-hidden="true">{isExpanded ? "‹" : "›"}</span>

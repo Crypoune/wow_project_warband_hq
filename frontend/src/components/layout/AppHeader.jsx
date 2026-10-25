@@ -3,7 +3,7 @@ function AppHeader({ user, onLogout, onLogin, onSwitchAccount, onMenuToggle }) {
   return (
     <header className="app-header">
       {/* Logo et identité visuelle de Warband HQ. */}
-      <a className="app-brand" href="/" aria-label="Warband HQ home">
+      <a className="app-brand" href="/" aria-label="Accueil Warband HQ">
         <span className="brand-icon" aria-hidden="true">
           ✦
         </span>
@@ -12,7 +12,7 @@ function AppHeader({ user, onLogout, onLogin, onSwitchAccount, onMenuToggle }) {
           <strong>
             Warband <span>HQ</span>
           </strong>
-          <small>YOUR ADVENTURE, ORGANIZED</small>
+          <small>VOTRE AVENTURE, BIEN ORGANISÉE</small>
         </span>
       </a>
 
@@ -22,7 +22,7 @@ function AppHeader({ user, onLogout, onLogin, onSwitchAccount, onMenuToggle }) {
             className="mobile-menu-toggle"
             type="button"
             onClick={onMenuToggle}
-            aria-label="Open navigation menu"
+            aria-label="Ouvrir le menu de navigation"
           >
             <span aria-hidden="true">☰</span>
           </button>
@@ -36,17 +36,17 @@ function AppHeader({ user, onLogout, onLogin, onSwitchAccount, onMenuToggle }) {
               type="button"
               onClick={onSwitchAccount}
             >
-              Switch account
+              Changer de compte
             </button>
 
             <button className="logout-button" type="button" onClick={onLogout}>
-              Log out
+              Se déconnecter
             </button>
           </>
         ) : (
           // Un utilisateur déconnecté peut démarrer la connexion Blizzard.
           <button className="logout-button" type="button" onClick={onLogin}>
-            Log in with Battle.net
+            Se connecter avec Battle.net
           </button>
         )}
       </div>

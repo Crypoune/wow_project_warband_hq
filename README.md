@@ -17,6 +17,14 @@ developed incrementally through Agile sprints and user stories.
 - Support logout.
 - Integrate the React frontend with the FastAPI backend.
 
+### Battle.net Account Switching --- US-21
+
+- Open an account-switch confirmation modal from the application header.
+- Open Battle.net logout in a separate browser tab.
+- Preserve the current Warband HQ session until the new OAuth authentication succeeds.
+- Detect when Blizzard returns the same account instead of a different account.
+- After Battle.net logout, manually return to Warband HQ and select "Log in with Battle.net" to complete the switch.
+
 ### Character Retrieval --- US-02
 
 - Retrieve characters associated with the authenticated Blizzard
@@ -352,7 +360,7 @@ GET `/api/auth/login` Starts Blizzard authentication
 GET `/api/auth/callback` Processes the OAuth callback
 GET `/api/auth/me` Returns the authenticated user's profile
 POST `/api/auth/logout` Ends the user's session
-
+POST `/api/auth/switch` — Initiates a Battle.net account switch for an authenticated user.
 The backend manages authentication sessions. Frontend requests must
 include credentials when needed to preserve the session.
 
@@ -434,6 +442,11 @@ To run only the tag integration tests:
 ```bash
 DATABASE_URL='mysql+pymysql://warband_hq_user:YOUR_DATABASE_PASSWORD@127.0.0.1:8889/warband_hq_test' python -m pytest tests/test_tag_integration.py -v
 ```
+
+The authentication tests cover account-switch initialization, session
+preservation, successful session replacement, same-account detection,
+Blizzard OAuth failures, and rollback when saving the replacement
+session fails.
 
 The automated backend tests cover the application behavior implemented
 in the project. A passing test suite does not replace manual
@@ -575,6 +588,8 @@ stories.
 - **US-07 --- Character Filtering and Sorting:** search, filtering, and sorting.
 - **US-08 --- Character Favorites:** persistent favorite management and favorites-only filtering.
 - **US-09 --- Global Character Tag Management:** global tag catalogue, administrator-only catalogue management, and character tag assignment.
+- **US-20 --- Character Tag Management & Performance:** assigned tags displayed in My Warband and managed from the character details page.
+- **US-21 --- Switch Battle.net Account:** confirmation modal, separate-tab Battle.net logout, same-account detection, and session replacement after successful OAuth. Users return manually to Warband HQ and select "Log in with Battle.net" to complete the switch.
 
 Update project status as user stories are completed and verified.
 

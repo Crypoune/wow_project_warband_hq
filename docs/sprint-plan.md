@@ -71,13 +71,13 @@ Establish the technical foundation required to develop the Warband HQ backend.
 - Configure the Python development environment.
 - Configure FastAPI and Uvicorn.
 - Configure the backend dependencies.
-- Set up PostgreSQL for the development environment.
+- Set up MySQL for the development environment.
 - Create the Warband HQ database.
 - Create the dedicated application database user.
-- Document the initial PostgreSQL setup.
+- Document the initial MySQL setup.
 - Configure environment variables.
 - Configure application settings with Pydantic Settings.
-- Configure SQLAlchemy and the PostgreSQL driver.
+- Configure SQLAlchemy and the MySQL driver.
 - Establish the backend-to-database connection.
 - Implement the first `/health` endpoint.
 - Make the health endpoint verify the database connection.
@@ -89,7 +89,7 @@ Establish the technical foundation required to develop the Warband HQ backend.
 
 The database is intentionally not fully implemented during this sprint.
 
-Only the infrastructure required for the backend to connect to PostgreSQL is established.
+Only the infrastructure required for the backend to connect to MySQL is established.
 
 Application data models and database tables will be introduced progressively during the sprints that require them.
 
@@ -104,11 +104,11 @@ Technical preparation for:
 ### Dependencies
 
 - Sprint 0 completed.
-- PostgreSQL development environment available.
+- MySQL development environment available.
 
 ### Deliverable
 
-A functional FastAPI backend capable of connecting to PostgreSQL, with a working health endpoint, basic error handling and automated tests.
+A functional FastAPI backend capable of connecting to MySQL, with a working health endpoint, basic error handling and automated tests.
 
 ---
 

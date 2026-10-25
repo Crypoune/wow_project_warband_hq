@@ -1,8 +1,8 @@
 function ConfirmDialog({
   title,
   message,
-  confirmLabel = "Continue",
-  cancelLabel = "Cancel",
+  confirmLabel = "Continuer",
+  cancelLabel = "Annuler",
   onConfirm,
   onCancel,
 }) {

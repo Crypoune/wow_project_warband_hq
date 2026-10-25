@@ -75,7 +75,7 @@ function CharacterEquipment({ equipment = [], characterArtUrl = null }) {
       aria-label="Équipement du personnage"
     >
       <header className="character-equipment-header">
-        <p className="section-eyebrow">ARMORY</p>
+        <p className="section-eyebrow">ARMURERIE</p>
         <h2>Équipement</h2>
       </header>
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import ConfirmDialog from "./components/ConfirmDialog.jsx";
+import ConfirmDialog from "./components/ui/ConfirmDialog.jsx";
 import AppHeader from "./components/layout/AppHeader.jsx";
 import Sidebar from "./components/layout/Sidebar.jsx";
 import MobileMenu from "./components/layout/MobileMenu.jsx";
@@ -68,7 +68,8 @@ function App() {
     } catch (err) {
       // On conserve le message fourni par le service lorsqu'il existe.
       setError(
-        err.message || "Unable to contact Warband HQ. Please try again.",
+        err.message ||
+          "Impossible de contacter Warband HQ. Veuillez réessayer.",
       );
     } finally {
       // L'indicateur de chargement est désactivé même en cas d'erreur.
@@ -91,7 +92,7 @@ function App() {
       // Affiche une erreur si la récupération de la collection échoue.
       setError(
         err.message ||
-          "Unable to retrieve imported characters. Please try again.",
+          "Impossible de récupérer les personnages importés. Veuillez réessayer.",
       );
     } finally {
       // Arrête toujours l'indicateur de chargement.
@@ -118,7 +119,8 @@ function App() {
       );
     } catch (err) {
       setError(
-        err.message || "Unable to update character favorite. Please try again.",
+        err.message ||
+          "Impossible de modifier le statut favori du personnage. Veuillez réessayer.",
       );
     }
   };
@@ -166,12 +168,12 @@ function App() {
           setAuthNotice({
             type: "error",
             message:
-              "Battle.net returned the same account. Please choose another account to switch.",
+              "Battle.net a renvoyé le même compte. Choisissez un autre compte pour effectuer le changement.",
           });
         } else if (authStatus === "switch_success") {
           setAuthNotice({
             type: "success",
-            message: "Battle.net account switched successfully.",
+            message: "Le compte Battle.net a bien été changé.",
           });
         }
 
@@ -264,7 +266,7 @@ function App() {
 
     if (!logoutWindow) {
       setError(
-        "The Battle.net logout tab was blocked. Please allow pop-ups and try again.",
+        "L'onglet de déconnexion Battle.net a été bloqué. Autorisez les fenêtres surgissantes, puis réessayez.",
       );
       return;
     }
@@ -277,7 +279,7 @@ function App() {
       const data = await switchAccount();
 
       if (!data?.battlenet_logout_url) {
-        throw new Error("Battle.net logout URL is missing.");
+        throw new Error("L'URL de déconnexion Battle.net est manquante.");
       }
 
       // Lance la déconnexion Battle.net dans le nouvel onglet.
@@ -290,7 +292,8 @@ function App() {
       logoutWindow.close();
 
       setError(
-        err.message || "Unable to switch Battle.net account. Please try again.",
+        err.message ||
+          "Impossible de changer de compte Battle.net. Veuillez réessayer.",
       );
     }
   };
@@ -377,8 +380,8 @@ function App() {
       // Affiche un message adapté au résultat de l'importation.
       setSuccess(
         importedCount > 0
-          ? `${importedCount} character(s) imported successfully.`
-          : "No new characters were imported. They may already be in your warband.",
+          ? `${importedCount} personnage(s) importé(s) avec succès.`
+          : "Aucun nouveau personnage n'a été importé. Ils sont peut-être déjà présents dans votre bande de guerre.",
       );
 
       // Réinitialise la sélection après une réponse réussie.
@@ -390,7 +393,10 @@ function App() {
     } catch (err) {
       // Affiche le message d'erreur fourni par le service lorsqu'il existe.
       // Sinon, utilise un message générique.
-      setError(err.message || "Unable to import characters. Please try again.");
+      setError(
+        err.message ||
+          "Impossible d'importer les personnages. Veuillez réessayer.",
+      );
     } finally {
       // Désactive toujours le chargement, même si une erreur survient.
       setImporting(false);
@@ -440,8 +446,8 @@ function App() {
       <section className="app-content">
         {loading ? (
           <div className="status-panel">
-            <h2>Checking your session...</h2>
-            <p>Please wait while we contact Warband HQ.</p>
+            <h2>Vérification de votre session…</h2>
+            <p>Veuillez patienter pendant que nous contactons Warband HQ.</p>
           </div>
         ) : !user ? (
           <section className="login-card">
@@ -449,12 +455,13 @@ function App() {
               <span className="brand-icon" aria-hidden="true">
                 ✦
               </span>
-              <p className="brand-label">YOUR ADVENTURE, ORGANIZED</p>
+              <p className="brand-label">VOTRE AVENTURE, BIEN ORGANISÉE</p>
               <h1>
                 Warband <span>HQ</span>
               </h1>
               <p className="brand-description">
-                Your World of Warcraft characters, all in one place.
+                Tous vos personnages de World of Warcraft réunis au même
+                endroit.
               </p>
             </div>
 
@@ -465,20 +472,20 @@ function App() {
             </div>
 
             <div className="login-content">
-              <h2>Welcome, adventurer</h2>
+              <h2>Bienvenue, aventurier !</h2>
               <p>
-                Connect your Battle.net account to retrieve and import your
-                characters.
+                Connectez votre compte Battle.net pour récupérer et importer vos
+                personnages.
               </p>
 
               <p className="login-note">
-                Secure authentication powered by Blizzard
+                Authentification sécurisée par Blizzard{" "}
               </p>
             </div>
 
             <footer className="login-footer">
               <span>WARBAND HQ</span>
-              <span>AZEROTH IS WAITING</span>
+              <span>AZEROTH VOUS ATTEND</span>
             </footer>
           </section>
         ) : (
@@ -549,19 +556,19 @@ function App() {
 
       <footer className="page-footer">
         <span>WARBAND HQ</span>
-        <span>BUILT FOR YOUR ADVENTURE IN AZEROTH</span>
+        <span>CONÇU POUR VOTRE AVENTURE EN AZEROTH</span>
       </footer>
 
       {isSwitchModalOpen && (
         <ConfirmDialog
-          title="Switch Battle.net account"
+          title="Changer de compte Battle.net"
           message={
-            "Warband HQ will open Battle.net logout in a new tab.\n\n" +
-            "After signing out there, return to this tab and click " +
-            '"Log in with Battle.net" to continue with another account.'
+            "Warband HQ ouvrira la page de déconnexion Battle.net dans un nouvel onglet.\n\n" +
+            "Après vous être déconnecté, revenez dans cet onglet et cliquez sur " +
+            '"Se connecter avec Battle.net" pour continuer avec un autre compte.'
           }
-          confirmLabel="Continue"
-          cancelLabel="Cancel"
+          confirmLabel="Continuer"
+          cancelLabel="Annuler"
           onConfirm={confirmSwitchAccount}
           onCancel={() => setIsSwitchModalOpen(false)}
         />

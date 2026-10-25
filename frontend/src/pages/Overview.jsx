@@ -12,12 +12,15 @@ function Overview({
   return (
     <>
       <section className="welcome-section">
-        <p className="section-eyebrow">YOUR ACCOUNT</p>
-        <h1>Welcome, adventurer.</h1>
-        <p>Choose the characters you want to bring into your warband.</p>
+        <p className="section-eyebrow">VOTRE COMPTE</p>
+        <h1>Bienvenue, aventurier !</h1>
+        <p>
+          Choisissez les personnages que vous souhaitez ajouter à votre bande de
+          guerre.
+        </p>
 
         <div className="account-badge">
-          <span>Battle.net account</span>
+          <span>Compte Battle.net</span>
           <strong>{user.blizzard_account_id}</strong>
         </div>
       </section>
@@ -25,8 +28,8 @@ function Overview({
       <section className="characters-section">
         <div className="section-heading">
           <div>
-            <p className="section-eyebrow">CHARACTER COLLECTION</p>
-            <h2>Available characters</h2>
+            <p className="section-eyebrow">COLLECTION DE PERSONNAGES</p>
+            <h2>Personnages disponibles</h2>
           </div>
 
           <button
@@ -35,21 +38,21 @@ function Overview({
             onClick={onRefresh}
             disabled={loadingCharacters || importing}
           >
-            {loadingCharacters ? "Refreshing..." : "Refresh"}
+            {loadingCharacters ? "Actualisation…" : "Actualiser"}
           </button>
         </div>
 
         {loadingCharacters ? (
           <div className="status-panel">
-            <h3>Discovering your characters...</h3>
-            <p>Contacting the Blizzard API.</p>
+            <h3>Recherche de vos personnages…</h3>
+            <p>Connexion à l'API Blizzard.</p>
           </div>
         ) : characters.length === 0 ? (
           <div className="status-panel">
-            <h3>No characters found</h3>
+            <h3>Aucun personnage trouvé</h3>
             <p>
-              No available characters were returned by Blizzard. You can try
-              refreshing the list.
+              Blizzard n'a renvoyé aucun personnage disponible. Vous pouvez
+              actualiser la liste.
             </p>
           </div>
         ) : (
@@ -66,8 +69,8 @@ function Overview({
                 disabled={importing}
               >
                 {selectedIds.length === characters.length
-                  ? "Deselect all"
-                  : "Select all"}
+                  ? "Tout désélectionner"
+                  : "Tout sélectionner"}
               </button>
             </div>
 
@@ -93,7 +96,7 @@ function Overview({
                         ✦
                       </span>
                       <span className="character-level">
-                        LVL {character.level}
+                        Niv. {character.level}
                       </span>
                     </div>
 
@@ -105,7 +108,7 @@ function Overview({
                     </p>
 
                     <div className="character-meta">
-                      <span>Realm</span>
+                      <span>Royaume</span>
                       <strong>{character.realm}</strong>
                     </div>
 
@@ -116,7 +119,7 @@ function Overview({
             </div>
 
             <div className="import-toolbar">
-              <p>Select the characters you want to import.</p>
+              <p>Sélectionnez les personnages que vous souhaitez importer.</p>
 
               <button
                 className="blizzard-button import-button"
@@ -125,8 +128,8 @@ function Overview({
                 disabled={selectedIds.length === 0 || importing}
               >
                 {importing
-                  ? "Importing..."
-                  : `Import selection (${selectedIds.length})`}
+                  ? "Importation…"
+                  : `Importer la sélection (${selectedIds.length})`}
               </button>
             </div>
           </>

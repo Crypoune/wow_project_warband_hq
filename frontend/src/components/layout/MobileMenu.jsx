@@ -14,7 +14,7 @@ function MobileMenu({ activeItem, onNavigate, onClose }) {
     <aside
       className="mobile-menu"
       id="mobile-navigation"
-      aria-label="Mobile navigation"
+      aria-label="Navigation mobile"
     >
       <div className="mobile-menu-header">
         <span>Navigation</span>
@@ -22,7 +22,7 @@ function MobileMenu({ activeItem, onNavigate, onClose }) {
           type="button"
           className="mobile-menu-close"
           onClick={onClose}
-          aria-label="Close navigation menu"
+          aria-label="Fermer le menu de navigation"
         >
           ×
         </button>

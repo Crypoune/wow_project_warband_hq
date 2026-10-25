@@ -7,14 +7,7 @@ import { CLASS_ICONS, CLASS_COLORS } from "../data/wowClasses";
 import { RACE_ICONS } from "../data/wowRaces";
 import { FACTION_ICONS } from "../data/wowFactions";
 
-import {
-  ChevronDown,
-  ChevronUp,
-  SlidersHorizontal,
-  LayoutGrid,
-  List,
-  Star,
-} from "lucide-react";
+import { LayoutGrid, List, Star } from "lucide-react";
 
 function FavoriteButton({ character, onToggleFavorite }) {
   const isFavorite = Boolean(character.is_favorite);
@@ -26,11 +19,11 @@ function FavoriteButton({ character, onToggleFavorite }) {
       onClick={() => onToggleFavorite(character.id, !isFavorite)}
       aria-label={
         isFavorite
-          ? `Remove ${character.name} from favorites`
-          : `Add ${character.name} to favorites`
+          ? `Retirer ${character.name} des favoris`
+          : `Ajouter ${character.name} aux favoris`
       }
       aria-pressed={isFavorite}
-      title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
     >
       <Star
         size={20}
@@ -58,7 +51,7 @@ function CharacterItemLevel({ character }) {
   if (averageItemLevel == null && equippedItemLevel == null) {
     return (
       <div className="character-item-level">
-        <span className="character-item-level-label">Ilvl</span>
+        <span className="character-item-level-label">Niv. d'objet</span>
         <span className="character-item-level-unavailable">—</span>
       </div>
     );
@@ -69,7 +62,7 @@ function CharacterItemLevel({ character }) {
       className="character-item-level"
       aria-label={`Niveau d'objet moyen : ${averageItemLevel ?? "indisponible"} ; équipement : ${equippedItemLevel ?? "indisponible"}`}
     >
-      <span className="character-item-level-label">Ilvl</span>
+      <span className="character-item-level-label">Niv. d'objet</span>
 
       <span className="character-item-level-value">
         {averageItemLevel ?? "—"}
@@ -99,7 +92,7 @@ function CharacterTags({ tags = [] }) {
             </span>
           ))
         ) : (
-          <span className="character-tags-empty">No tag</span>
+          <span className="character-tags-empty">Aucun tag</span>
         )}
       </div>
     </div>
@@ -212,10 +205,10 @@ function MyWarband({
     <section className="characters-section">
       <div className="section-heading">
         <div>
-          <p className="section-eyebrow">YOUR COLLECTION</p>
-          <h2>My Warband</h2>
+          <p className="section-eyebrow">VOTRE COLLECTION</p>
+          <h2>Mon bataillon</h2>
           <p className="collection-description">
-            Your heroes, gathered in one place.
+            Vos héros réunis au même endroit.
           </p>
         </div>
 
@@ -225,11 +218,14 @@ function MyWarband({
           </span>
 
           <span className="collection-count-label">
-            {filteredCharacters.length === 1 ? "CHARACTER" : "CHARACTERS"}
+            {filteredCharacters.length === 1 ? "PERSONNAGE" : "PERSONNAGES"}
           </span>
         </div>
 
-        <div className="view-toggle" aria-label="Character display mode">
+        <div
+          className="view-toggle"
+          aria-label="Mode d'affichage des personnages"
+        >
           <button
             type="button"
             className={
@@ -238,7 +234,7 @@ function MyWarband({
                 : "view-toggle-button"
             }
             onClick={() => setViewMode("grid")}
-            aria-label="Display characters as cards"
+            aria-label="Afficher les personnages sous forme de cartes"
             aria-pressed={viewMode === "grid"}
           >
             <LayoutGrid size={20} strokeWidth={1.8} aria-hidden="true" />
@@ -252,7 +248,7 @@ function MyWarband({
                 : "view-toggle-button"
             }
             onClick={() => setViewMode("list")}
-            aria-label="Display characters as a list"
+            aria-label="Afficher les personnages sous forme de liste"
             aria-pressed={viewMode === "list"}
           >
             <List size={20} strokeWidth={1.8} aria-hidden="true" />
@@ -280,30 +276,30 @@ function MyWarband({
 
       {loadingImportedCharacters ? (
         <div className="status-panel">
-          <h3>Loading your warband...</h3>
-          <p>Retrieving your imported characters.</p>
+          <h3>Chargement de votre bataillon…</h3>
+          <p>Récupération de vos personnages importés.</p>
         </div>
       ) : importedCharacters.length === 0 ? (
         <div className="status-panel">
-          <h3>Your warband is waiting</h3>
+          <h3>Votre bataillon vous attend</h3>
           <p>
-            You haven't imported any characters yet. Select characters above to
-            start building your collection.
+            Vous n'avez encore importé aucun personnage. Sélectionnez des
+            personnages ci-dessus pour commencer à constituer votre collection.
           </p>
         </div>
       ) : filteredCharacters.length === 0 ? (
         <div className="status-panel">
-          <h3>No characters found</h3>
+          <h3>Aucun personnage trouvé</h3>
           <p>
-            No characters match your current search or filters. Try changing
-            your criteria or reset the filters.
+            Aucun personnage ne correspond à votre recherche ou à vos filtres.
+            Modifiez vos critères ou réinitialisez les filtres.
           </p>
           <button
             type="button"
             className="filter-reset-button"
             onClick={resetFilters}
           >
-            Reset filters
+            Réinitialiser les filtres
           </button>
         </div>
       ) : (
@@ -341,7 +337,7 @@ function MyWarband({
                 }}
                 tabIndex={0}
                 role="link"
-                aria-label={`View details for ${character.name}`}
+                aria-label={`Afficher les détails de ${character.name}`}
               >
                 {viewMode === "grid" ? (
                   <>
@@ -353,7 +349,7 @@ function MyWarband({
                       {character.portrait_url ? (
                         <img
                           src={character.portrait_url}
-                          alt={`Portrait of ${character.name}`}
+                          alt={`Portrait de ${character.name}`}
                           className="character-portrait-image"
                           loading="lazy"
                         />
@@ -389,16 +385,16 @@ function MyWarband({
                     <div className="character-card-info">
                       <div className="character-card-heading">
                         <h3 className="character-name">
-                          {character.name || "Unknown character"}
+                          {character.name || "Personnage inconnu"}
                         </h3>
 
                         <span className="character-realm">
-                          {character.realm || "Realm unavailable"}
+                          {character.realm || "Royaume indisponible"}
                         </span>
                       </div>
 
                       <p className="character-class">
-                        {character.class || "Class unavailable"}
+                        {character.class || "Classe indisponible"}
                         {character.race ? ` · ${character.race}` : ""}
                       </p>
 

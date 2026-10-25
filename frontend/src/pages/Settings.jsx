@@ -26,14 +26,40 @@ function Settings({ user }) {
       const data = await getTags();
       setTags(Array.isArray(data) ? data : (data?.tags ?? []));
     } catch (err) {
-      setError(err.message || "Unable to load the tag catalogue.");
+      setError(err.message || "Impossible de charger le catalogue des tags.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadTags();
+    let cancelled = false;
+
+    async function loadInitialTags() {
+      try {
+        const data = await getTags();
+
+        if (!cancelled) {
+          setTags(Array.isArray(data) ? data : (data?.tags ?? []));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err.message || "Impossible de charger le catalogue des tags.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadInitialTags();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleCreateTag(event) {
@@ -42,7 +68,7 @@ function Settings({ user }) {
     const name = newTagName.trim();
 
     if (!name) {
-      setError("Please enter a tag name.");
+      setError("Veuillez saisir un nom de tag.");
       return;
     }
 
@@ -53,10 +79,10 @@ function Settings({ user }) {
     try {
       await createTag(name);
       setNewTagName("");
-      setMessage("Tag created successfully.");
+      setMessage("Tag créé avec succès.");
       await loadTags();
     } catch (err) {
-      setError(err.message || "Unable to create the tag.");
+      setError(err.message || "Impossible de créer le tag.");
     } finally {
       setSaving(false);
     }
@@ -80,7 +106,7 @@ function Settings({ user }) {
     const name = editingTagName.trim();
 
     if (!name) {
-      setError("Please enter a tag name.");
+      setError("Veuillez saisir un nom de tag.");
       return;
     }
 
@@ -91,10 +117,10 @@ function Settings({ user }) {
     try {
       await updateTag(tagId, name);
       cancelEditing();
-      setMessage("Tag updated successfully.");
+      setMessage("Tag modifié avec succès.");
       await loadTags();
     } catch (err) {
-      setError(err.message || "Unable to update the tag.");
+      setError(err.message || "Impossible de modifier le tag.");
     } finally {
       setSaving(false);
     }
@@ -102,7 +128,7 @@ function Settings({ user }) {
 
   async function handleDeleteTag(tag) {
     const confirmed = window.confirm(
-      `Are you sure you want to delete the tag "${tag.name}"?`,
+      `Voulez-vous vraiment supprimer le tag « ${tag.name} » ?`,
     );
 
     if (!confirmed) {
@@ -115,10 +141,10 @@ function Settings({ user }) {
 
     try {
       await deleteTag(tag.id);
-      setMessage("Tag deleted successfully.");
+      setMessage("Tag supprimé avec succès.");
       await loadTags();
     } catch (err) {
-      setError(err.message || "Unable to delete the tag.");
+      setError(err.message || "Impossible de supprimer le tag.");
     } finally {
       setSaving(false);
     }
@@ -128,21 +154,24 @@ function Settings({ user }) {
     <section className="settings-page">
       <div className="section-heading">
         <div>
-          <p className="section-eyebrow">PREFERENCES</p>
-          <h1>Settings</h1>
+          <p className="section-eyebrow">PRÉFÉRENCES</p>
+          <h1>Paramètres</h1>
           <p className="collection-description">
-            Manage your Warband HQ experience.
+            Personnalisez votre expérience Warband HQ.
           </p>
         </div>
       </div>
 
       {isAdmin && (
         <section className="status-panel tag-settings">
-          <h2>Tag catalogue</h2>
-          <p>Manage the shared tags available to all Warband HQ users.</p>
+          <h2>Catalogue des tags</h2>
+          <p>
+            Gérez les tags partagés disponibles pour tous les utilisateurs de
+            Warband HQ.
+          </p>
 
           <form onSubmit={handleCreateTag}>
-            <label htmlFor="new-tag-name">New tag</label>
+            <label htmlFor="new-tag-name">Nouveau tag</label>
 
             <div className="tag-form-row">
               <input
@@ -150,13 +179,13 @@ function Settings({ user }) {
                 type="text"
                 value={newTagName}
                 onChange={(event) => setNewTagName(event.target.value)}
-                placeholder="Enter a tag name"
+                placeholder="Saisissez le nom d'un tag"
                 maxLength={50}
                 required
               />
 
               <button type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Create tag"}
+                {saving ? "Enregistrement…" : "Créer le tag"}
               </button>
             </div>
           </form>
@@ -173,12 +202,12 @@ function Settings({ user }) {
           )}
 
           <div className="tag-catalog">
-            <h3>Existing tags</h3>
+            <h3>Tags existants</h3>
 
             {loading ? (
-              <p>Loading tags...</p>
+              <p>Chargement des tags…</p>
             ) : tags.length === 0 ? (
-              <p>No tags have been created yet.</p>
+              <p>Aucun tag n'a encore été créé.</p>
             ) : (
               <ul>
                 {tags.map((tag) => (
@@ -199,7 +228,7 @@ function Settings({ user }) {
                         />
 
                         <button type="submit" disabled={saving}>
-                          Save
+                          Enregistrer
                         </button>
 
                         <button
@@ -207,7 +236,7 @@ function Settings({ user }) {
                           onClick={cancelEditing}
                           disabled={saving}
                         >
-                          Cancel
+                          Annuler
                         </button>
                       </form>
                     ) : (
@@ -220,7 +249,7 @@ function Settings({ user }) {
                             onClick={() => startEditing(tag)}
                             disabled={saving}
                           >
-                            Rename
+                            Renommer
                           </button>
 
                           <button
@@ -228,7 +257,7 @@ function Settings({ user }) {
                             onClick={() => handleDeleteTag(tag)}
                             disabled={saving}
                           >
-                            Delete
+                            Supprimer
                           </button>
                         </div>
                       </>
@@ -243,10 +272,10 @@ function Settings({ user }) {
 
       {!isAdmin && (
         <div className="status-panel">
-          <h3>Settings are coming soon</h3>
+          <h3>Les paramètres arrivent bientôt</h3>
           <p>
-            Personalization options and account preferences will be available
-            here in a future update.
+            Les options de personnalisation et les préférences du compte seront
+            disponibles ici lors d'une prochaine mise à jour.
           </p>
         </div>
       )}

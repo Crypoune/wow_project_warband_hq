@@ -174,7 +174,12 @@ def callback(request: Request, code: str, state: str):
                 db.delete(old_auth_session)
 
             # Enregistre le remplacement de session en une seule transaction.
-            db.commit()
+            # Annule les modifications en attente si le commit échoue.
+            try:
+                db.commit()
+            except SQLAlchemyError:
+                db.rollback()
+                raise
 
         # Efface les données OAuth temporaires du cookie.
         request.session.clear()
@@ -215,19 +220,6 @@ def callback(request: Request, code: str, state: str):
             auth_status = "switch_same_account"
         else:
             auth_status = "switch_success"
-
-    # Redirige le navigateur vers le frontend avec le résultat.
-    return RedirectResponse(
-        url=f"http://127.0.0.1:5173/?auth={auth_status}",
-        status_code=303,
-    )
-
-    # Pendant un changement, Blizzard peut reconnecter le même compte.
-    if (
-        switched_from_account_id is not None
-        and str(switched_from_account_id) == str(blizzard_account_id)
-    ):
-        auth_status = "switch_same_account"
 
     # Redirige le navigateur vers le frontend avec le résultat.
     return RedirectResponse(

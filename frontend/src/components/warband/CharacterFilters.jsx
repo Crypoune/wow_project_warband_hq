@@ -28,7 +28,7 @@ function CharacterFilters({
         >
           <SlidersHorizontal size={17} strokeWidth={1.9} aria-hidden="true" />
 
-          <span>Filters</span>
+          <span>Filtres</span>
 
           <span className="filter-chevron" aria-hidden="true">
             <ChevronDown
@@ -55,27 +55,27 @@ function CharacterFilters({
         aria-hidden={!showFilters}
         inert={!showFilters}
       >
-        <h3>Search &amp; organize</h3>
+        <h3>Rechercher et organiser</h3>
 
         <div className="filter-field">
-          <label htmlFor="character-search">Search characters</label>
+          <label htmlFor="character-search">Rechercher des personnages</label>
           <input
             id="character-search"
             type="search"
-            placeholder="Name, race, class, realm..."
+            placeholder="Nom, race, classe, royaume…"
             value={searchTerm}
             onChange={(event) => onSearchChange(event.target.value)}
           />
         </div>
 
         <div className="filter-field">
-          <label htmlFor="character-class-filter">Class</label>
+          <label htmlFor="character-class-filter">Classe</label>
           <select
             id="character-class-filter"
             value={selectedClass}
             onChange={(event) => onClassChange(event.target.value)}
           >
-            <option value="all">All classes</option>
+            <option value="all">Toutes les classes</option>
             {availableClasses.map((characterClass) => (
               <option key={characterClass} value={characterClass}>
                 {characterClass}
@@ -91,7 +91,7 @@ function CharacterFilters({
             value={selectedFaction}
             onChange={(event) => onFactionChange(event.target.value)}
           >
-            <option value="all">All factions</option>
+            <option value="all">Toutes les factions</option>
             <option value="Alliance">Alliance</option>
             <option value="Horde">Horde</option>
           </select>
@@ -99,7 +99,7 @@ function CharacterFilters({
 
         <div className="filter-field favorite-filter">
           <label htmlFor="favorites-only">
-            <span>Show favorites only</span>
+            <span>Afficher uniquement les favoris</span>
             <input
               id="favorites-only"
               type="checkbox"
@@ -110,17 +110,21 @@ function CharacterFilters({
         </div>
 
         <div className="filter-field">
-          <label htmlFor="character-sort">Sort by</label>
+          <label htmlFor="character-sort">Trier par</label>
           <select
             id="character-sort"
             value={sortBy}
             onChange={(event) => onSortChange(event.target.value)}
           >
-            <option value="name-asc">Name — A to Z</option>
-            <option value="name-desc">Name — Z to A</option>
-            <option value="level-desc">Level — Highest first</option>
-            <option value="level-asc">Level — Lowest first</option>
-            <option value="realm-asc">Realm — A to Z</option>
+            <option value="name-asc">Nom — A à Z</option>
+            <option value="name-desc">Nom — Z à A</option>
+            <option value="level-desc">
+              Niveau — du plus élevé au plus bas
+            </option>
+            <option value="level-asc">
+              Niveau — du plus bas au plus élevé
+            </option>
+            <option value="realm-asc">Royaume — A à Z</option>
           </select>
         </div>
 
@@ -129,7 +133,7 @@ function CharacterFilters({
           className="filter-reset-button"
           onClick={onResetFilters}
         >
-          Reset filters
+          Réinitialiser les filtres
         </button>
       </div>
     </>

@@ -1,16 +1,23 @@
--- Warband HQ - PostgreSQL database setup
--- Creates the application database and its dedicated user.
+-- Warband HQ - MySQL database setup
+-- Creates the application and test databases and a dedicated database user.
 --
 -- IMPORTANT:
 -- Replace CHANGE_ME with a secure password before executing.
 -- Do not commit a real password to Git.
 
-CREATE USER warband_hq_user WITH PASSWORD 'CHANGE_ME';
+CREATE DATABASE IF NOT EXISTS warband_hq
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
 
-CREATE DATABASE warband_hq
+CREATE DATABASE IF NOT EXISTS warband_hq_test
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
 
-GRANT CONNECT ON DATABASE warband_hq TO warband_hq_user;
+CREATE USER IF NOT EXISTS 'warband_hq_user'@'127.0.0.1'
+    IDENTIFIED BY 'CHANGE_ME';
 
-\connect warband_hq
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP, REFERENCES
+    ON warband_hq.* TO 'warband_hq_user'@'127.0.0.1';
 
-GRANT USAGE, CREATE ON SCHEMA public TO warband_hq_user;
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP, REFERENCES
+    ON warband_hq_test.* TO 'warband_hq_user'@'127.0.0.1';

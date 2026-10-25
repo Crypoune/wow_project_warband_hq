@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Shield, Trophy, Heart, Zap, Activity } from "lucide-react";
+import { ArrowLeft, Shield, Trophy, Heart, Zap } from "lucide-react";
 import { CLASS_COLORS, CLASS_ICONS } from "../data/wowClasses";
 import { RACE_ICONS } from "../data/wowRaces";
 import { FACTION_ICONS } from "../data/wowFactions";
@@ -128,7 +128,9 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
         if (!cancelled) setCharacter(result);
       } catch (err) {
         if (!cancelled) {
-          setError(err.message || "Unable to retrieve character details.");
+          setError(
+            err.message || "Impossible de récupérer les détails du personnage.",
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -157,7 +159,9 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
         }
       } catch (err) {
         if (!cancelled) {
-          setTagError(err.message || "Unable to retrieve available tags.");
+          setTagError(
+            err.message || "Impossible de récupérer les tags disponibles.",
+          );
         }
       } finally {
         if (!cancelled) {
@@ -202,7 +206,7 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
       setSelectedTagId("");
       setTagSuccess(`Tag « ${tag.name} » ajouté.`);
     } catch (err) {
-      setTagError(err.message || "Unable to assign tag.");
+      setTagError(err.message || "Impossible d'attribuer ce tag.");
     } finally {
       setTagActionLoading(false);
     }
@@ -234,7 +238,7 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
 
       setTagSuccess(`Tag « ${tag.name} » retiré.`);
     } catch (err) {
-      setTagError(err.message || "Unable to remove tag.");
+      setTagError(err.message || "Impossible de retirer ce tag.");
     } finally {
       setTagActionLoading(false);
     }
@@ -251,17 +255,19 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
           onClick={onBack}
         >
           <ArrowLeft size={18} aria-hidden="true" />
-          Back to My Warband
+          Retour à mon bataillon
         </button>
 
         <div className="status-panel" role={hasError ? undefined : "status"}>
           <h2>
-            {loading ? "Loading character..." : "Unable to load character"}
+            {loading
+              ? "Chargement du personnage…"
+              : "Impossible de charger le personnage"}
           </h2>
           <p role={hasError ? "alert" : undefined}>
             {loading
-              ? "Retrieving character information from Warband HQ."
-              : error || "Character not found."}
+              ? "Récupération des informations du personnage depuis Warband HQ."
+              : error || "Personnage introuvable."}
           </p>
         </div>
       </section>
@@ -308,7 +314,7 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
             <p className="character-details-title">{activeTitle}</p>
           )}
 
-          <h1>{character.name || "Unknown character"}</h1>
+          <h1>{character.name || "Personnage inconnu"}</h1>
 
           <div className="character-details-facts">
             <span className="character-details-level-inline">
@@ -334,7 +340,7 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
             {guild && <span className="character-details-guild">{guild}</span>}
 
             <span className="character-details-realm-inline">
-              {character.realm || "Realm unavailable"}
+              {character.realm || "Royaume indisponible"}
             </span>
           </div>
         </div>
