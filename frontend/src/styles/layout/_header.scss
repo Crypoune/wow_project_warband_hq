@@ -114,6 +114,39 @@
 }
 
 // ========================================
+// SWITCH ACCOUNT BUTTON
+// ========================================
+
+.switch-account-button {
+  padding: 9px 16px;
+
+  color: #f2c66d;
+  font-size: 13px;
+
+  background: rgba(215, 170, 80, 0.08);
+  border: 1px solid rgba(215, 170, 80, 0.3);
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  transition:
+    background vars.$transition-fast,
+    border-color vars.$transition-fast,
+    color vars.$transition-fast;
+
+  &:hover {
+    color: #fff0c9;
+    background: rgba(215, 170, 80, 0.16);
+    border-color: rgba(215, 170, 80, 0.55);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f2c66d;
+    outline-offset: 3px;
+  }
+}
+
+// ========================================
 // MOBILE MENU TOGGLE
 // ========================================
 
@@ -181,6 +214,11 @@
   }
 
   .logout-button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .switch-account-button {
     padding: 8px 10px;
     font-size: 12px;
   }

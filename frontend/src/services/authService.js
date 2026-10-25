@@ -25,6 +25,24 @@ export async function getCurrentUser() {
 }
 
 /*
+ * Prépare le changement de compte Battle.net.
+ * Le backend conserve la session Warband HQ actuelle
+ * et renvoie l'URL de déconnexion Battle.net.
+ */
+export async function switchAccount() {
+  const response = await fetch(`${API_URL}/api/auth/switch`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to switch Battle.net account.");
+  }
+
+  return response.json();
+}
+
+/*
  * Termine la session de l'utilisateur auprès du backend.
  *
  * Cette fonction :

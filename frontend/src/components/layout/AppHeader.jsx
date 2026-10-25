@@ -1,5 +1,5 @@
 // Affiche le header commun, que l'utilisateur soit connecté ou non.
-function AppHeader({ user, onLogout, onLogin, onMenuToggle }) {
+function AppHeader({ user, onLogout, onLogin, onSwitchAccount, onMenuToggle }) {
   return (
     <header className="app-header">
       {/* Logo et identité visuelle de Warband HQ. */}
@@ -30,10 +30,19 @@ function AppHeader({ user, onLogout, onLogin, onMenuToggle }) {
 
         {/* Le bouton dépend de l'état de connexion de l'utilisateur. */}
         {user ? (
-          // Un utilisateur connecté peut fermer sa session.
-          <button className="logout-button" type="button" onClick={onLogout}>
-            Log out
-          </button>
+          <>
+            <button
+              className="switch-account-button"
+              type="button"
+              onClick={onSwitchAccount}
+            >
+              Switch account
+            </button>
+
+            <button className="logout-button" type="button" onClick={onLogout}>
+              Log out
+            </button>
+          </>
         ) : (
           // Un utilisateur déconnecté peut démarrer la connexion Blizzard.
           <button className="logout-button" type="button" onClick={onLogin}>

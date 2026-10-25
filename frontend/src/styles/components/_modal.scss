@@ -1,0 +1,119 @@
+@use "../abstracts/variables" as vars;
+
+// ========================================
+// MODAL DIALOG
+// ========================================
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(9, 13, 24, 0.8);
+  backdrop-filter: blur(6px);
+}
+
+.modal-card {
+  width: min(100%, 440px);
+  padding: 34px 30px 28px;
+
+  text-align: left;
+
+  background: linear-gradient(160deg, #182238f5, #0d1423f8);
+  border: 1px solid #c9a45c55;
+  border-radius: 8px;
+
+  box-shadow:
+    0 24px 80px #00000070,
+    inset 0 1px 0 #ffffff0a;
+
+  h2 {
+    margin: 0 0 12px;
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+}
+
+.modal-message {
+  margin: 0;
+
+  color: #aab4c6;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+// ========================================
+// MODAL ACTIONS
+// ========================================
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.modal-button {
+  flex: 1;
+  padding: 12px 16px;
+
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  cursor: pointer;
+
+  transition:
+    background vars.$transition-fast,
+    border-color vars.$transition-fast,
+    filter vars.$transition-fast;
+
+  &:focus-visible {
+    outline: 2px solid #f2c66d;
+    outline-offset: 3px;
+  }
+}
+
+.modal-cancel {
+  background: rgba(255, 255, 255, 0.03);
+  color: #e8dfcc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+
+  &:hover {
+    color: #f2c66d;
+    background: rgba(215, 170, 80, 0.08);
+    border-color: rgba(215, 170, 80, 0.45);
+  }
+}
+
+.modal-confirm {
+  background: linear-gradient(180deg, #e8c779, #c99b42);
+  color: #171b25;
+  border: 1px solid #f3d78e;
+  border-radius: 4px;
+
+  &:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 8px 24px #d7aa5026;
+  }
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+
+@media (max-width: vars.$breakpoint-mobile) {
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+}

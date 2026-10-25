@@ -112,49 +112,70 @@ A functional FastAPI backend capable of connecting to PostgreSQL, with a working
 
 ---
 
-## 4. Sprint 2 — Blizzard Authentication & Character Retrieval
+## 6. Sprint 4 — Character Details & Progression
 
 ### Objective
 
-Implement Blizzard authentication and retrieve the World of Warcraft characters available to the authenticated user, while establishing the initial frontend authentication flow.
+Implement the detailed character view, selected progression information, and the ability to switch the connected Battle.net account.
 
 ### Backend Activities
 
-- Implement Blizzard OAuth authentication.
-- Implement the authentication callback.
-- Manage the authentication session.
-- Implement logout.
-- Configure the Blizzard API client.
-- Connect the backend to the Blizzard Profile APIs.
-- Retrieve the user's WoW account profile.
-- Retrieve available WoW characters.
-- Implement the required database structures for authenticated users and imported characters.
-- Implement character import.
-- Implement error handling for authentication and character retrieval.
-- Add automated tests for authentication and character retrieval.
+- Implement the character details endpoint.
+- Retrieve detailed character information from Blizzard.
+- Retrieve character media.
+- Retrieve character equipment.
+- Retrieve relevant progression information.
+- Implement character synchronization where required.
+- Add the required database structures for synchronization metadata.
+- Implement error handling for detailed character data.
+- Add automated tests for character details and progression.
+- Include assigned character tags in the character listing and character details API responses.
+- Retrieve character tag assignments through a grouped query to avoid per-character requests.
+- Preserve existing authentication and character ownership checks for tag operations.
+- Add automated tests for tag retrieval, assignment and removal, and unauthorized access.
+- Implement the account-switching flow between the existing Warband HQ session and a new Battle.net authentication.
+- Preserve the existing Warband HQ session until the new authentication succeeds.
+- Replace the existing authentication session only after successful authentication with the selected account.
+- Handle failed or cancelled authentication, OAuth state validation, and cases where the same Battle.net account is returned.
+- Add automated tests for successful account switching, same-account authentication, and failed or cancelled switching.
 
 ### Frontend Activities
 
-- Prepare the React application structure required for authentication.
-- Implement the login interface.
-- Connect the frontend to the backend authentication flow.
-- Handle the authentication redirect and return flow.
-- Display basic authentication errors.
-- Prepare the frontend structure required to display authenticated user data and characters.
+- Implement the Character Details page.
+- Display detailed character information.
+- Display character media.
+- Display equipment information.
+- Display selected progression information.
+- Connect the Character Details page to the backend.
+- Display loading and error states.
+- Display assigned tag badges on My Warband character cards without tag management controls.
+- Move tag assignment and removal controls to the Character Details page.
+- Load the available tag catalogue only when required for tag management.
+- Verify tag management behavior and loading states.
+- Add a Change Battle.net Account action to the application header.
+- Display a confirmation dialog before starting the account-switching flow.
+- Redirect the user through the Battle.net logout and authentication flow.
+- Return the user to Warband HQ after authentication and refresh the authenticated application state.
+- Handle cancelled or failed account switching without leaving the interface in an inconsistent state.
 
 ### User Stories
 
-- US-01 — Blizzard Authentication
-- US-02 — Character Retrieval
-- US-05 — Error Handling
+- US-04 — Main Character Information
+- US-06 — Detailed Character View
+- US-20 — Character Tag Management & Performance
+- US-21 — Switch Battle.net Account
 
 ### Dependencies
 
-- Sprint 1 completed.
+- Sprint 3 completed.
+- Character management available.
+- Existing Blizzard authentication and session management available.
 
 ### Deliverable
 
-A user can authenticate with Blizzard and retrieve the available World of Warcraft characters through the Warband HQ application.
+Users can select a character and view a detailed overview of its information and progression. Character tags remain visible in the Warband overview and can be managed from the character details page, with unnecessary per-character tag requests eliminated.
+
+Authenticated users can also initiate a Battle.net account switch, authenticate with another account, and return to Warband HQ with the new session. Failed or cancelled switching must not prematurely invalidate the existing Warband HQ session.
 
 ---
 
