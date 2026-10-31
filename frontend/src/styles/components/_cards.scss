@@ -42,17 +42,21 @@
   transition:
     border-color vars.$transition-fast,
     background vars.$transition-fast,
-    transform vars.$transition-fast;
+    transform vars.$transition-fast,
+    box-shadow vars.$transition-fast;
 
   &:hover {
-    transform: translateY(-2px);
-    border-color: #c9a45c88;
+    transform: translateY(-3px);
+    border-color: #c9a45caa;
+    box-shadow: 0 10px 24px #00000030;
   }
 
   &.selected {
     border-color: vars.$color-accent-light;
-    background: linear-gradient(145deg, #c9a45c17, #090d1866);
-    box-shadow: inset 0 0 0 1px #e0b65f20;
+    background: linear-gradient(145deg, #c9a45c20, #090d1866);
+    box-shadow:
+      inset 0 0 0 1px #e0b65f35,
+      0 0 18px #c9a45c0d;
   }
 
   h3 {
@@ -62,6 +66,16 @@
     font-family: Georgia, "Times New Roman", serif;
     font-size: 21px;
     font-weight: 500;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .character-card {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
   }
 }
 

@@ -103,3 +103,44 @@ CREATE TABLE IF NOT EXISTS character_tags (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
+
+
+-- 6. Personal goals
+CREATE TABLE IF NOT EXISTS goals (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    character_id INT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'IN_PROGRESS',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+
+    INDEX ix_goals_user_id (user_id),
+    INDEX ix_goals_character_id (character_id),
+
+    CONSTRAINT ck_goals_status
+        CHECK (
+            status IN (
+                'IN_PROGRESS',
+                'ON_HOLD',
+                'COMPLETED',
+                'ABANDONED'
+            )
+        ),
+
+    CONSTRAINT fk_goals_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_goals_character
+        FOREIGN KEY (character_id)
+        REFERENCES characters (id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;

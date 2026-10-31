@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Shield, Trophy, Heart, Zap } from "lucide-react";
+import { ArrowLeft, Shield, Trophy, Heart, Zap, Plus } from "lucide-react";
 import { CLASS_COLORS, CLASS_ICONS } from "../data/wowClasses";
 import { RACE_ICONS } from "../data/wowRaces";
 import { FACTION_ICONS } from "../data/wowFactions";
@@ -9,6 +9,16 @@ import {
   assignCharacterTag,
   removeCharacterTag,
 } from "../services/characterService.js";
+import {
+  getGoals,
+  createGoal,
+  updateGoal,
+  deleteGoal,
+} from "../services/goalService.js";
+import GoalCard from "../components/goals/GoalCard.jsx";
+import GoalForm from "../components/goals/GoalForm.jsx";
+import GoalFilters from "../components/goals/GoalFilters.jsx";
+import DeleteGoalDialog from "../components/goals/DeleteGoalDialog.jsx";
 import CharacterEquipment from "../components/character/CharacterEquipment.jsx";
 
 const MAIN_STATS = [
@@ -114,6 +124,32 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
   const [tagError, setTagError] = useState("");
   const [tagSuccess, setTagSuccess] = useState("");
 
+  // ========================================
+  // GESTION DES OBJECTIFS
+  // ========================================
+
+  // Liste complète des objectifs récupérés depuis le backend.
+  const [goals, setGoals] = useState([]);
+
+  // État du chargement et des erreurs liés aux objectifs.
+  const [loadingGoals, setLoadingGoals] = useState(true);
+  const [goalError, setGoalError] = useState("");
+  const [goalSuccess, setGoalSuccess] = useState("");
+
+  // Indique si une création ou une modification est en cours.
+  const [goalFormOpen, setGoalFormOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [isWarbandGoalForm, setIsWarbandGoalForm] = useState(false);
+  const [goalActionLoading, setGoalActionLoading] = useState(false);
+
+  // Objectif actuellement sélectionné pour une éventuelle suppression.
+  const [goalToDelete, setGoalToDelete] = useState(null);
+  const [isDeletingGoal, setIsDeletingGoal] = useState(false);
+
+  // Chaque catégorie possède son propre filtre.
+  const [characterGoalFilter, setCharacterGoalFilter] = useState("ALL");
+  const [warbandGoalFilter, setWarbandGoalFilter] = useState("ALL");
+
   useEffect(() => {
     let cancelled = false;
 
@@ -176,6 +212,46 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
       cancelled = true;
     };
   }, []);
+
+  /**
+   * Charge tous les objectifs de l'utilisateur connecté.
+   *
+   * Le backend renvoie les objectifs du personnage ET ceux de la Warband.
+   * Nous effectuerons la séparation dans le composant, à partir de
+   * character_id.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGoals() {
+      setLoadingGoals(true);
+      setGoalError("");
+
+      try {
+        const result = await getGoals();
+
+        if (!cancelled) {
+          setGoals(result);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setGoalError(err.message || "Impossible de récupérer les objectifs.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingGoals(false);
+        }
+      }
+    }
+
+    loadGoals();
+
+    // Évite de mettre à jour le composant si on quitte le personnage
+    // avant la fin de la requête.
+    return () => {
+      cancelled = true;
+    };
+  }, [characterId]);
 
   async function handleAssignTag() {
     if (!selectedTagId || tagActionLoading) return;
@@ -244,6 +320,135 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
     }
   }
 
+  // ========================================
+  // ACTIONS SUR LES OBJECTIFS
+  // ========================================
+
+  /**
+   * Ouvre le formulaire de création.
+   *
+   * @param {boolean} isWarbandGoal - Type d'objectif à créer.
+   */
+  function handleCreateGoal(isWarbandGoal) {
+    setEditingGoal(null);
+    setIsWarbandGoalForm(isWarbandGoal);
+    setGoalError("");
+    setGoalSuccess("");
+    setGoalFormOpen(true);
+  }
+
+  /**
+   * Ouvre le formulaire avec les informations d'un objectif existant.
+   *
+   * @param {object} goal - Objectif à modifier.
+   */
+  function handleEditGoal(goal) {
+    setEditingGoal(goal);
+
+    // Un objectif sans character_id appartient à la Warband.
+    setIsWarbandGoalForm(goal.character_id == null);
+
+    setGoalError("");
+    setGoalSuccess("");
+    setGoalFormOpen(true);
+  }
+
+  /**
+   * Ferme le formulaire et réinitialise son état.
+   */
+  function handleCloseGoalForm() {
+    if (goalActionLoading) return;
+
+    setGoalFormOpen(false);
+    setEditingGoal(null);
+    setIsWarbandGoalForm(false);
+  }
+
+  /**
+   * Crée ou modifie un objectif selon le contexte.
+   *
+   * @param {object} goalData - Données transmises par GoalForm.
+   */
+  async function handleSaveGoal(goalData) {
+    if (goalActionLoading) return;
+
+    setGoalActionLoading(true);
+    setGoalError("");
+    setGoalSuccess("");
+
+    try {
+      if (editingGoal) {
+        // Un objectif existe déjà : on appelle la route PATCH.
+        await updateGoal(editingGoal.id, goalData);
+        setGoalSuccess("Objectif modifié avec succès.");
+      } else {
+        // Nouvel objectif : on appelle la route POST.
+        await createGoal(goalData);
+        setGoalSuccess("Objectif créé avec succès.");
+      }
+
+      // Actualise la liste depuis le backend.
+      const updatedGoals = await getGoals();
+      setGoals(updatedGoals);
+
+      // Ferme le formulaire après une opération réussie.
+      setGoalFormOpen(false);
+      setEditingGoal(null);
+      setIsWarbandGoalForm(false);
+    } catch (err) {
+      setGoalError(err.message || "Impossible d'enregistrer cet objectif.");
+    } finally {
+      setGoalActionLoading(false);
+    }
+  }
+
+  /**
+   * Demande l'ouverture de la confirmation de suppression.
+   *
+   * @param {object} goal - Objectif à supprimer.
+   */
+  function handleAskDeleteGoal(goal) {
+    setGoalToDelete(goal);
+    setGoalError("");
+    setGoalSuccess("");
+  }
+
+  /**
+   * Annule la suppression et ferme la confirmation.
+   */
+  function handleCancelDeleteGoal() {
+    if (isDeletingGoal) return;
+
+    setGoalToDelete(null);
+  }
+
+  /**
+   * Supprime définitivement l'objectif après confirmation.
+   */
+  async function handleConfirmDeleteGoal() {
+    if (!goalToDelete || isDeletingGoal) return;
+
+    setIsDeletingGoal(true);
+    setGoalError("");
+    setGoalSuccess("");
+
+    try {
+      await deleteGoal(goalToDelete.id);
+
+      // Retire l'objectif de la liste affichée.
+      setGoals((currentGoals) =>
+        currentGoals.filter((goal) => goal.id !== goalToDelete.id),
+      );
+
+      setGoalSuccess("Objectif supprimé avec succès.");
+      setGoalToDelete(null);
+    } catch (err) {
+      setGoalError(err.message || "Impossible de supprimer cet objectif.");
+    } finally {
+      setIsDeletingGoal(false);
+    }
+  }
+
   if (loading || error || !character) {
     const hasError = Boolean(error || (!loading && !character));
 
@@ -289,6 +494,30 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
   const activeSpec = getNamedValue(character.active_spec);
   const guild = getNamedValue(character.guild);
   const statistics = character.statistics ?? {};
+
+  // ========================================
+  // SÉPARATION ET FILTRAGE DES OBJECTIFS
+  // ========================================
+
+  // Objectifs associés au personnage actuellement consulté.
+  const characterGoals = goals.filter(
+    (goal) => goal.character_id === characterId,
+  );
+
+  // Objectifs qui ne sont associés à aucun personnage.
+  const warbandGoals = goals.filter((goal) => goal.character_id == null);
+
+  // Applique le filtre sélectionné aux objectifs du personnage.
+  const visibleCharacterGoals =
+    characterGoalFilter === "ALL"
+      ? characterGoals
+      : characterGoals.filter((goal) => goal.status === characterGoalFilter);
+
+  // Applique le filtre sélectionné aux objectifs de la Warband.
+  const visibleWarbandGoals =
+    warbandGoalFilter === "ALL"
+      ? warbandGoals
+      : warbandGoals.filter((goal) => goal.status === warbandGoalFilter);
 
   return (
     <section
@@ -436,6 +665,79 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
         </div>
 
         <aside className="character-details-sidebar">
+          {/* OBJECTIFS DU PERSONNAGE ET DE LA WARBAND */}
+          <section className="character-goals-panel">
+            <div className="character-goals-header">
+              <h2>Mes objectifs</h2>
+              <p>
+                Suis ta progression avec tes objectifs personnels et ceux de ta
+                Warband.
+              </p>
+            </div>
+
+            {/* Objectifs associés au personnage */}
+            <div className="character-goals-group">
+              <h3>Objectifs de {character.name}</h3>
+              <p>Les objectifs associés à ce personnage.</p>
+
+              <button type="button" onClick={() => handleCreateGoal(false)}>
+                <Plus size={16} aria-hidden="true" />
+                Nouvel objectif
+              </button>
+
+              <GoalFilters
+                activeFilter={characterGoalFilter}
+                onFilterChange={setCharacterGoalFilter}
+              />
+
+              {loadingGoals ? (
+                <p>Chargement des objectifs...</p>
+              ) : visibleCharacterGoals.length > 0 ? (
+                visibleCharacterGoals.map((goal) => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onEdit={handleEditGoal}
+                    onDelete={handleAskDeleteGoal}
+                  />
+                ))
+              ) : (
+                <p>Aucun objectif ne correspond à ce filtre.</p>
+              )}
+            </div>
+
+            {/* Objectifs communs à la Warband */}
+            <div className="character-goals-group">
+              <h3>Objectifs de la Warband</h3>
+              <p>Les objectifs communs à tous tes personnages.</p>
+
+              <button type="button" onClick={() => handleCreateGoal(true)}>
+                <Plus size={16} aria-hidden="true" />
+                Nouvel objectif
+              </button>
+
+              <GoalFilters
+                activeFilter={warbandGoalFilter}
+                onFilterChange={setWarbandGoalFilter}
+              />
+
+              {loadingGoals ? (
+                <p>Chargement des objectifs...</p>
+              ) : visibleWarbandGoals.length > 0 ? (
+                visibleWarbandGoals.map((goal) => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onEdit={handleEditGoal}
+                    onDelete={handleAskDeleteGoal}
+                  />
+                ))
+              ) : (
+                <p>Aucun objectif ne correspond à ce filtre.</p>
+              )}
+            </div>
+          </section>
+
           <StatGroup
             title="Statistiques principales"
             icon={Heart}
@@ -456,6 +758,26 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
           </p>
         </aside>
       </div>
+
+      {/* Formulaire de création et de modification */}
+      {goalFormOpen && (
+        <GoalForm
+          goal={editingGoal}
+          characterId={characterId}
+          isWarbandGoal={isWarbandGoalForm}
+          onSubmit={handleSaveGoal}
+          onCancel={handleCloseGoalForm}
+          isSubmitting={goalActionLoading}
+        />
+      )}
+
+      {/* Confirmation de suppression */}
+      <DeleteGoalDialog
+        goal={goalToDelete}
+        onConfirm={handleConfirmDeleteGoal}
+        onCancel={handleCancelDeleteGoal}
+        isDeleting={isDeletingGoal}
+      />
     </section>
   );
 }

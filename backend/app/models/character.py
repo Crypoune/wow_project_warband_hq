@@ -1,4 +1,3 @@
-
 from datetime import datetime, timezone
 
 from sqlalchemy import (
@@ -55,6 +54,11 @@ class Character(Base):
     last_synced_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
+    )
+
+    goals: Mapped[list["Goal"]] = relationship(
+        back_populates="character",
+        passive_deletes=True,
     )
 
     user: Mapped["User"] = relationship(back_populates="characters")

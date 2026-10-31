@@ -666,9 +666,9 @@
   }
 }
 
-/* ========================================
-   CHARACTER HEADER — LAYOUT REFINEMENTS
-   ======================================== */
+// ========================================
+// CHARACTER HEADER — LAYOUT REFINEMENTS
+// ========================================
 
 .character-details-header {
   grid-template-columns: 96px minmax(0, 1fr) minmax(190px, auto);
@@ -856,5 +856,559 @@
 
   .character-details-header-meta > div {
     flex: 1 1 160px;
+  }
+}
+
+// ========================================
+// CHARACTER GOALS — OBJECTIVES PANEL
+// ========================================
+
+.character-goals-panel {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+  min-width: 0;
+  margin-bottom: vars.$spacing-lg;
+
+  padding: 18px;
+
+  border: 1px solid #c9a45c44;
+  border-radius: 6px;
+
+  background: linear-gradient(145deg, #182238b8, #0d1423d9);
+}
+
+// En-tête général du panneau.
+.character-goals-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #c9a45c33;
+
+  h2 {
+    margin: 0 0 8px;
+    color: #e9dfc7;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+    color: #aab4c6;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+// Chaque catégorie : personnage ou Warband.
+.character-goals-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+
+  padding: 12px;
+
+  border: 1px solid #ffffff12;
+  border-radius: 5px;
+
+  background: #090d1855;
+
+  h3 {
+    margin: 0;
+    color: #e9dfc7;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  p {
+    margin: 0;
+    color: #aab4c6;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  // Boutons de création et actions des objectifs.
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 34px;
+    padding: 7px 10px;
+
+    border: 1px solid #c9a45c55;
+    border-radius: 4px;
+
+    background: #c9a45c12;
+    color: vars.$color-accent-light;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition:
+      background vars.$transition-fast,
+      border-color vars.$transition-fast,
+      color vars.$transition-fast;
+
+    &:hover:not(:disabled) {
+      border-color: vars.$color-accent;
+      background: #c9a45c25;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid vars.$color-accent;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Message affiché lorsqu'aucun objectif ne correspond au filtre.
+.character-goals-group > p:last-child {
+  color: #8490a5;
+  font-style: italic;
+}
+
+// Adaptation du panneau sur les petits écrans.
+@media (max-width: vars.$breakpoint-mobile) {
+  .character-goals-panel {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .character-goals-header h2 {
+    font-size: 20px;
+  }
+
+  .character-goals-group {
+    padding: 10px;
+  }
+}
+
+// ========================================
+// GOAL FORM — MODAL
+// ========================================
+
+// Fond sombre qui recouvre toute la page.
+.goal-modal-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: #050914cc;
+  backdrop-filter: blur(5px);
+
+  animation: goal-modal-fade-in 0.2s ease-out;
+}
+
+// Fenêtre principale.
+.goal-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  padding: 24px;
+
+  border: 1px solid #c9a45c77;
+  border-radius: 7px;
+
+  background: linear-gradient(145deg, #182238, #0b1120);
+
+  box-shadow:
+    0 24px 70px #00000080,
+    inset 0 1px 0 #ffffff0a;
+}
+
+// En-tête et bouton de fermeture.
+.goal-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+
+  border-bottom: 1px solid #c9a45c33;
+
+  h2 {
+    margin: 0;
+    color: #e9dfc7;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 23px;
+    font-weight: 500;
+  }
+
+  .goal-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+
+    border: 1px solid #c9a45c44;
+    border-radius: 4px;
+
+    background: #090d1875;
+    color: #c9a45c;
+
+    font-size: 23px;
+    line-height: 1;
+
+    cursor: pointer;
+    transition:
+      background vars.$transition-fast,
+      border-color vars.$transition-fast;
+
+    &:hover:not(:disabled) {
+      border-color: vars.$color-accent;
+      background: #c9a45c20;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid vars.$color-accent;
+      outline-offset: 3px;
+    }
+  }
+}
+
+// Organisation générale du formulaire.
+.goal-modal .goal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+// Chaque champ du formulaire.
+.goal-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  min-width: 0;
+  position: relative;
+
+  label {
+    color: #e9dfc7;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 11px 12px;
+
+    border: 1px solid #c9a45c44;
+    border-radius: 4px;
+
+    background: #090f1d;
+    color: #f4f0e6;
+
+    font: inherit;
+    font-size: 13px;
+
+    transition:
+      border-color vars.$transition-fast,
+      background vars.$transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: vars.$color-accent;
+      background: #101a2c;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &::placeholder {
+      color: #78849a;
+    }
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  select {
+    cursor: pointer;
+  }
+}
+
+// Compteur de caractères du titre.
+.goal-form-counter {
+  align-self: flex-end;
+  color: #8490a5;
+  font-size: 11px;
+}
+
+// Message d'erreur de validation.
+.goal-form-error {
+  margin: 0;
+  padding: 10px 12px;
+
+  border: 1px solid #d66b6b66;
+  border-radius: 4px;
+
+  background: #d66b6b12;
+  color: #ff9999;
+
+  font-size: 12px;
+}
+
+// Boutons Annuler et Créer / Enregistrer.
+.goal-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-top: 6px;
+
+  button {
+    min-height: 38px;
+    padding: 9px 16px;
+
+    border: 1px solid #c9a45c66;
+    border-radius: 4px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition:
+      background vars.$transition-fast,
+      border-color vars.$transition-fast,
+      color vars.$transition-fast;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid vars.$color-accent;
+      outline-offset: 3px;
+    }
+  }
+
+  .goal-form-cancel {
+    background: #090d1875;
+    color: #aab4c6;
+
+    &:hover:not(:disabled) {
+      border-color: #aab4c6;
+      background: #ffffff0c;
+    }
+  }
+
+  .goal-form-submit {
+    border-color: vars.$color-accent;
+    background: #c9a45c;
+    color: #101522;
+
+    &:hover:not(:disabled) {
+      background: #e0bd75;
+    }
+  }
+}
+
+// Animation d'apparition.
+@keyframes goal-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+// Adaptation aux petits écrans.
+@media (max-width: vars.$breakpoint-mobile) {
+  .goal-modal-overlay {
+    align-items: center;
+    padding: 12px;
+  }
+
+  .goal-modal {
+    padding: 18px;
+    max-height: 94vh;
+  }
+
+  .goal-modal-header h2 {
+    font-size: 20px;
+  }
+
+  .goal-form-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Respect des préférences de réduction des animations.
+@media (prefers-reduced-motion: reduce) {
+  .goal-modal-overlay {
+    animation: none;
+  }
+}
+
+/* ========================================
+   GOAL DELETE — MODAL CONTENT
+======================================== */
+
+/* Aligne l'icône d'avertissement avec le titre. */
+.goal-delete-modal {
+  .goal-modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    svg {
+      flex-shrink: 0;
+      color: #e0bd75;
+    }
+  }
+}
+
+/* Organisation du message de confirmation. */
+.goal-delete-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  p {
+    margin: 0;
+    color: #aab4c6;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+/* Nom de l'objectif concerné. */
+.goal-delete-name {
+  display: block;
+  padding: 12px 14px;
+
+  border: 1px solid #c9a45c33;
+  border-radius: 4px;
+
+  background: #090d1875;
+  color: #e9dfc7;
+
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* Avertissement sur le caractère irréversible. */
+.goal-delete-content .goal-delete-warning {
+  color: #e0a0a0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Boutons de confirmation et d'annulation. */
+.goal-delete-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-top: 22px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 38px;
+    padding: 9px 16px;
+
+    border: 1px solid #c9a45c66;
+    border-radius: 4px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition:
+      background vars.$transition-fast,
+      border-color vars.$transition-fast,
+      color vars.$transition-fast;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid vars.$color-accent;
+      outline-offset: 3px;
+    }
+  }
+
+  .goal-delete-cancel {
+    background: #090d1875;
+    color: #aab4c6;
+
+    &:hover:not(:disabled) {
+      border-color: #aab4c6;
+      background: #ffffff0c;
+    }
+  }
+
+  .goal-delete-confirm {
+    border-color: #c76c6c88;
+    background: #8f353522;
+    color: #ffaaaa;
+
+    &:hover:not(:disabled) {
+      border-color: #d66b6b;
+      background: #a83f3f44;
+    }
+  }
+}
+
+/* Adaptation mobile. */
+@media (max-width: vars.$breakpoint-mobile) {
+  .goal-delete-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
   }
 }

@@ -11,6 +11,7 @@ function Overview({
 }) {
   return (
     <>
+      {/* Présente l'utilisateur connecté et rappelle l'objectif de cette page. */}
       <section className="welcome-section">
         <p className="section-eyebrow">VOTRE COMPTE</p>
         <h1>Bienvenue, aventurier !</h1>
@@ -25,6 +26,7 @@ function Overview({
         </div>
       </section>
 
+      {/* Regroupe les personnages disponibles sur le compte Blizzard. */}
       <section className="characters-section">
         <div className="section-heading">
           <div>
@@ -42,6 +44,7 @@ function Overview({
           </button>
         </div>
 
+        {/* Adapte l'affichage selon le chargement et la disponibilité des personnages. */}
         {loadingCharacters ? (
           <div className="status-panel">
             <h3>Recherche de vos personnages…</h3>
@@ -57,9 +60,11 @@ function Overview({
           </div>
         ) : (
           <>
+            {/* Affiche le nombre de personnages sélectionnés par rapport au total disponible. */}
             <div className="selection-toolbar">
               <span>
-                {selectedIds.length} of {characters.length} selected
+                {selectedIds.length} / {characters.length} personnage(s)
+                sélectionné(s)
               </span>
 
               <button
@@ -118,6 +123,7 @@ function Overview({
               })}
             </div>
 
+            {/* Permet de lancer l'importation des personnages sélectionnés. */}
             <div className="import-toolbar">
               <p>Sélectionnez les personnages que vous souhaitez importer.</p>
 

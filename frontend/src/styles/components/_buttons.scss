@@ -16,11 +16,20 @@
 
   transition:
     background vars.$transition-fast,
-    border-color vars.$transition-fast;
+    border-color vars.$transition-fast,
+    transform vars.$transition-fast,
+    box-shadow vars.$transition-fast;
 
   &:hover:not(:disabled) {
+    transform: translateY(-1px);
     border-color: vars.$color-accent-light;
     background: #1b2945;
+    box-shadow: 0 5px 14px #00000025;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
   }
 }
 
@@ -93,6 +102,11 @@
   &:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+  }
+
+  &:focus-visible {
+    outline: 2px solid vars.$color-accent-light;
+    outline-offset: 3px;
   }
 }
 

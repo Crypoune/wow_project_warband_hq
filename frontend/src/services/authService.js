@@ -30,15 +30,22 @@ export async function getCurrentUser() {
  * et renvoie l'URL de déconnexion Battle.net.
  */
 export async function switchAccount() {
+  // Envoie une requête HTTP au point d'accès de changement de compte du backend.
   const response = await fetch(`${API_URL}/api/auth/switch`, {
+    // POST sert ici à demander une action au backend.
     method: "POST",
+    // Permet d'envoyer le cookie de session avec la requête.
     credentials: "include",
   });
 
+  // Vérifie si la réponse HTTP indique un échec.
   if (!response.ok) {
+    // Interrompt la fonction en déclenchant une erreur.
     throw new Error("Unable to switch Battle.net account.");
   }
 
+  // Convertit le corps de la réponse JSON en objet JavaScript,
+  // puis le retourne au composant qui a appelé cette fonction.
   return response.json();
 }
 
