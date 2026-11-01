@@ -144,3 +144,26 @@ CREATE TABLE IF NOT EXISTS goals (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
+
+-- 7. Tasks
+CREATE TABLE IF NOT EXISTS tasks (
+    id INT NOT NULL AUTO_INCREMENT,
+    goal_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+
+    INDEX ix_tasks_goal_id (goal_id),
+
+    CONSTRAINT fk_tasks_goal
+        FOREIGN KEY (goal_id)
+        REFERENCES goals (id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;

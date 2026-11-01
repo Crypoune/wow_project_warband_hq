@@ -1,0 +1,230 @@
+@use "../abstracts/variables" as vars;
+
+// ========================================
+// GOAL TASKS
+// ========================================
+
+.goal-tasks {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #ffffff12;
+}
+
+// ========================================
+// TASKS HEADER
+// ========================================
+
+.goal-tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-sm;
+  margin-bottom: 12px;
+}
+
+.goal-tasks-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: vars.$color-accent-light;
+
+  h4 {
+    margin: 0;
+    color: #d8deea;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+}
+
+.goal-tasks-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+
+  border: 1px solid #c9a45c44;
+  border-radius: 4px;
+
+  background: #c9a45c12;
+  color: #d8ad59;
+  font-size: 11px;
+  cursor: pointer;
+
+  transition:
+    background vars.$transition-fast,
+    border-color vars.$transition-fast;
+
+  &:hover:not(:disabled) {
+    background: #c9a45c25;
+    border-color: #c9a45caa;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ========================================
+// TASKS LIST
+// ========================================
+
+.goal-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ========================================
+// TASK ITEM
+// ========================================
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+
+  border: 1px solid #ffffff12;
+  border-radius: 5px;
+
+  background: #090d184d;
+
+  transition:
+    border-color vars.$transition-fast,
+    background vars.$transition-fast;
+
+  &:hover {
+    border-color: #c9a45c44;
+    background: #c9a45c08;
+  }
+
+  &--completed {
+    .task-item-title {
+      color: #7f8ba0;
+      text-decoration: line-through;
+    }
+
+    .task-item-checkmark {
+      border-color: #d8ad59;
+      background: #c9a45c25;
+    }
+  }
+}
+
+// ========================================
+// TASK CHECKBOX
+// ========================================
+
+.task-item-checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+
+  accent-color: #d8ad59;
+  cursor: pointer;
+}
+
+.task-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-item-title {
+  margin: 0;
+  color: #e9edf5;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.task-item-description {
+  margin: 5px 0 0;
+  color: #7f8ba0;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+// ========================================
+// TASK ACTIONS
+// ========================================
+
+.task-item-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 5px;
+}
+
+.task-item-edit,
+.task-item-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+
+  border: 1px solid transparent;
+  border-radius: 3px;
+
+  background: transparent;
+  color: #7f8ba0;
+  cursor: pointer;
+
+  transition:
+    color vars.$transition-fast,
+    background vars.$transition-fast,
+    border-color vars.$transition-fast;
+
+  &:hover {
+    color: #d8ad59;
+    border-color: #c9a45c33;
+    background: #c9a45c12;
+  }
+}
+
+.task-item-delete:hover {
+  color: #e47777;
+  border-color: #e4777733;
+  background: #e4777712;
+}
+
+// ========================================
+// TASK FEEDBACK
+// ========================================
+
+.goal-tasks-empty,
+.goal-tasks-loading {
+  margin: 10px 0;
+  color: #7f8ba0;
+  font-size: 11px;
+  font-style: italic;
+}
+
+.goal-tasks-error,
+.goal-tasks-success {
+  margin: 8px 0;
+  font-size: 11px;
+}
+
+.goal-tasks-error {
+  color: #e47777;
+}
+
+.goal-tasks-success {
+  color: #8bc99b;
+}
+
+// ========================================
+// REDUCED MOTION
+// ========================================
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-tasks-add,
+  .task-item,
+  .task-item-edit,
+  .task-item-delete {
+    transition: none;
+  }
+}

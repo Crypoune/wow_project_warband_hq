@@ -1,4 +1,5 @@
 import { Pencil, Trash2 } from "lucide-react";
+import TaskList from "../tasks/TaskList.jsx";
 
 // Associe chaque statut technique à un libellé lisible.
 // Les valeurs doivent correspondre aux statuts définis dans le backend.
@@ -56,6 +57,8 @@ function GoalCard({ goal, onEdit, onDelete }) {
       {goal.description && (
         <p className="goal-card-description">{goal.description}</p>
       )}
+
+      <TaskList goalId={goal.id} />
 
       {/* Actions disponibles sur chaque objectif. */}
       <div className="goal-card-actions">

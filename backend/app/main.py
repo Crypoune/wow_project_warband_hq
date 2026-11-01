@@ -25,8 +25,11 @@ from app.api.auth import router as auth_router
 # Importe le routeur qui gère les personnages.
 from app.api.characters import router as characters_router
 
-# IMporte le routeur qui gère les objectifs.
+# Importe le routeur qui gère les objectifs.
 from app.api.goals import router as goals_router
+
+# Importe le routeur qui gère les tâches.
+from app.api.tasks import router as tasks_router
 
 # Importe les fonctions personnalisées qui formateront les différentes réponses d'erreur.
 from app.core.exceptions import (
@@ -103,3 +106,6 @@ app.include_router(tags_router)
 
 # Enregistre les routes relatives aux objectifs.
 app.include_router(goals_router)
+
+# Enregistre les routes relatives aux tâches.
+app.include_router(tasks_router)

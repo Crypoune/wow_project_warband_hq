@@ -84,3 +84,9 @@ class Goal(Base):
     character: Mapped["Character | None"] = relationship(
         back_populates="goals",
     )
+
+    tasks: Mapped[list["Task"]] = relationship(
+        back_populates="goal",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

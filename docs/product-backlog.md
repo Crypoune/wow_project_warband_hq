@@ -28,11 +28,11 @@ The backlog will be progressively refined during development. Technical tasks wi
 | US-07 | As a player, I want to filter or sort my characters so that I can find a specific character more easily.                                                                                             | Must Have | US-03               | Done    |
 | US-08 | As a player, I want to mark characters as favorites so that I can quickly identify the characters I use or track most often.                                                                         | Must Have | US-03               | Done    |
 | US-09 | As a player, I want to assign tags to my characters so that I can organize and categorize them according to my needs.                                                                                | Must Have | US-03               | Done    |
-| US-10 | As a player, I want to create and manage personal goals so that I can organize what I want to accomplish in the game.                                                                                | Must Have | US-01               | Backlog |
-| US-11 | As a player, I want to create and manage tasks within my goals so that I can break my objectives into smaller actions.                                                                               | Must Have | US-10               | Backlog |
+| US-10 | As a player, I want to create and manage personal goals so that I can organize what I want to accomplish in the game.                                                                                | Must Have | US-01               | Done    |
+| US-11 | As a player, I want to create and manage tasks within my goals so that I can break my objectives into smaller actions.                                                                               | Must Have | US-10               | Done    |
 | US-12 | As a player, I want to create and manage a private note for each character so that I can record personal information about that character.                                                           | Must Have | US-03               | Backlog |
-| US-20 | As a player, I want to view assigned character tags in my Warband and manage them from the character details page, so that I can organize my characters while reducing unnecessary network requests. | Must Have | US-03, US-06, US-09 | Backlog |
-| US-21 | As a player, I want to switch the connected Battle.net account so that I can use Warband HQ with a different account.                                                                                | Must Have | US-01               | Backlog |
+| US-20 | As a player, I want to view assigned character tags in my Warband and manage them from the character details page, so that I can organize my characters while reducing unnecessary network requests. | Must Have | US-03, US-06, US-09 | Done    |
+| US-21 | As a player, I want to switch the connected Battle.net account so that I can use Warband HQ with a different account.                                                                                | Must Have | US-01               | Done    |
 
 ---
 
