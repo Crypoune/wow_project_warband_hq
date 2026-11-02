@@ -96,6 +96,14 @@ developed incrementally through Agile sprints and user stories.
 - Update and delete existing tasks.
 - Persist tasks and their association with goals in the database.
 
+### Character Notes — US-12
+
+- Create one private note per character.
+- Edit and save character notes.
+- Support multiline text and special characters.
+- Persist notes in the database.
+- Preserve notes when navigating away from a character or reloading the application.
+
 ### Character Tag Management & Performance --- US-20
 
 - Display assigned character tags in the My Warband overview.
@@ -478,6 +486,17 @@ Tasks are managed through goal-related and task-specific endpoints.
 | PATCH  | `/api/tasks/{task_id}`       | Updates a task, including its completion status. |
 | DELETE | `/api/tasks/{task_id}`       | Deletes a task.                                  |
 
+### Character Notes API
+
+Base path: `/api/characters/{character_id}/note`
+
+| Method | Endpoint               | Description                                      |
+| ------ | ---------------------- | ------------------------------------------------ |
+| GET    | `/{character_id}/note` | Retrieves the character's private note.          |
+| PUT    | `/{character_id}/note` | Creates or updates the character's private note. |
+
+Each character can have one private note. Notes support multiline text and are accessible only to the character's owner.
+
 ### Health Check
 
 Endpoint: `GET /health`
@@ -499,6 +518,21 @@ If the database is unavailable, the endpoint returns an HTTP `503` response.
 
 Warband HQ uses MySQL and SQL scripts to manage its database structure.
 Alembic migrations are not currently used.
+
+### Application Tables
+
+The application schema currently includes:
+
+- `users`: stores Warband HQ user accounts.
+- `characters`: stores imported World of Warcraft characters.
+- `authentication_sessions`: manages authenticated user sessions.
+- `tags`: stores the global character tag catalogue.
+- `character_tags`: manages character-tag associations.
+- `goals`: stores personal goals associated with a user or character.
+- `tasks`: stores tasks associated with personal goals.
+- `character_notes`: stores private notes associated with individual characters.
+
+Each character can have one note. Deleting a character automatically deletes its associated note.
 
 ### SQL Scripts
 
@@ -754,6 +788,7 @@ stories.
 - **US-09 --- Global Character Tag Management:** global tag catalogue, administrator-only catalogue management, and character tag assignment.
 - **US-10 --- Personal Goals:** creation and management of personal goals associated with the Warband or individual characters.
 - **US-11 --- Tasks:** task creation, management, completion tracking, and association with personal goals.
+- **US-12 --- Character Notes:** private character notes with multiline editing, persistence, and ownership protection.
 - **US-20 --- Character Tag Management & Performance:** assigned tags displayed in My Warband and managed from the character details page.
 - **US-21 --- Switch Battle.net Account:** confirmation modal, separate-tab Battle.net logout, same-account detection, and session replacement after successful OAuth. Users return manually to Warband HQ and select "Log in with Battle.net" to complete the switch.
 
