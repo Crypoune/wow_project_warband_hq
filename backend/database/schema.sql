@@ -167,3 +167,25 @@ CREATE TABLE IF NOT EXISTS tasks (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
+
+-- 8. Character notes
+CREATE TABLE IF NOT EXISTS character_notes (
+    id INT NOT NULL AUTO_INCREMENT,
+    character_id INT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+
+    CONSTRAINT uq_character_notes_character_id
+        UNIQUE (character_id),
+
+    CONSTRAINT fk_character_notes_character
+        FOREIGN KEY (character_id)
+        REFERENCES characters (id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;

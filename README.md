@@ -27,10 +27,8 @@ developed incrementally through Agile sprints and user stories.
 
 ### Character Retrieval --- US-02
 
-- Retrieve characters associated with the authenticated Blizzard
-  account.
-- Display available characters and import selected characters into
-  Warband HQ.
+- Retrieve characters associated with the authenticated Blizzard account.
+- Display available characters and import selected characters into Warband HQ.
 - Store imported characters in MySQL.
 - Prevent duplicate imports for the same user.
 - Retrieve the authenticated user's imported characters.
@@ -38,17 +36,21 @@ developed incrementally through Agile sprints and user stories.
 ### Character Overview --- US-03
 
 - Display imported characters in a centralized collection.
-- Show character portraits and visual references for classes, races,
-  and factions.
-- Display character media, name, level, class, race, gender, realm,
-  and faction.
+- Show character portraits and visual references for classes, races, and factions.
+- Display character media, name, level, class, race, gender, realm, and faction.
 - Switch between grid and list views.
+
+### Main Character Information --- US-04
+
+- Display the main information about a selected character.
+- Retrieve character information from the Blizzard API.
+- Present relevant character information in the character overview.
 
 ### Error Handling --- US-05
 
 - Handle invalid or unavailable Blizzard profile data.
-- Return appropriate API errors when character information cannot be
-  retrieved.
+- Return appropriate API errors when character information cannot be retrieved.
+- Display relevant loading and error states in the frontend.
 
 ### Character Details --- US-06
 
@@ -73,14 +75,37 @@ developed incrementally through Agile sprints and user stories.
 
 ### Global Character Tag Management --- US-09
 
-- Manage tags associated with characters.
-- Organize the collection with a shared tag catalogue.
+- Provide a shared tag catalogue for character organization.
+- Manage the available tags through administrative operations.
 - Persist tags and character-tag associations in the database.
+- Assign tags to characters.
+
+### Personal Goals --- US-10
+
+- Create and manage personal goals.
+- Associate goals with the user's Warband or with a specific character.
+- Define goal titles, descriptions, and statuses.
+- Update and delete existing goals.
+- Persist personal goals in the database.
+
+### Tasks --- US-11
+
+- Create tasks within personal goals.
+- Define task titles and descriptions.
+- Mark tasks as completed or incomplete.
+- Update and delete existing tasks.
+- Persist tasks and their association with goals in the database.
+
+### Character Tag Management & Performance --- US-20
+
+- Display assigned character tags in the My Warband overview.
+- Manage tag assignments from the Character Details page.
+- Retrieve assigned tags through grouped queries.
+- Reduce unnecessary network requests when displaying character tags.
 
 ### Planned Features
 
 - Character progression tracking.
-- Character details and synchronization with Blizzard.
 - Additional character-tracking features as the project evolves.
 
 ## Tech Stack
@@ -124,21 +149,40 @@ structure changes.
 
 ```text
 wow_project_warband_hq/
+│
 ├── backend/
 │   ├── app/
 │   │   ├── api/
 │   │   ├── core/
 │   │   ├── models/
 │   │   └── services/
+│   │
 │   ├── database/
 │   │   ├── schema.sql
 │   │   └── setup.sql
+│   │
 │   ├── tests/
 │   ├── requirements.txt
 │   └── .env.example
+│
 ├── frontend/
-│   └── src/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── data/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── styles/
+│   │
+│   ├── package.json
+│   └── vite.config.js
+│
 ├── docs/
+│   ├── coming-next.md
+│   ├── product-backlog.md
+│   └── sprint-plan.md
+│
 ├── .gitignore
 └── README.md
 ```
@@ -344,91 +388,159 @@ accessing endpoints that require an authenticated session.
 7.  Verify character retrieval when Blizzard provides the required
     account data.
 
-If the project exposes a health endpoint, use the route implemented in
-the current backend; do not assume one exists unless it is present in
-the code.
+Check the backend health endpoint:
 
-## Authentication API
+```bash
+curl http://127.0.0.1:8000/health
+```
 
-The authentication workflow uses these endpoints:
-
-Method Endpoint Description
-
----
-
-GET `/api/auth/login` Starts Blizzard authentication
-GET `/api/auth/callback` Processes the OAuth callback
-GET `/api/auth/me` Returns the authenticated user's profile
-POST `/api/auth/logout` Ends the user's session
-POST `/api/auth/switch` — Initiates a Battle.net account switch for an authenticated user.
-The backend manages authentication sessions. Frontend requests must
-include credentials when needed to preserve the session.
-
-## Character API
-
-The character retrieval and import workflow uses these endpoints:
-
----
-
-Method Endpoint Description
-
----
-
-GET `/api/characters/available` Retrieves characters
-available from the
-authenticated Blizzard
-account
-
-POST `/api/characters/import` Imports selected
-characters into Warband
-HQ
-
-GET `/api/characters` Retrieves characters
-imported by the
-authenticated user
-
----
-
-The import endpoint accepts a JSON payload containing selected Blizzard
-character IDs. For example:
+A successful response should look like:
 
 ```json
 {
-  "character_ids": [123456, 789012]
+  "status": "ok",
+  "database": "available"
 }
 ```
 
-These IDs are illustrative. The backend verifies that requested
-characters belong to the authenticated Blizzard account before importing
-them. Duplicate imports for the same user are skipped.
+## API Documentation
 
-Refer to the current API implementation and interactive API
-documentation for exact request and response schemas.
+Warband HQ provides a REST API built with **FastAPI**. All API endpoints use JSON for request and response bodies, unless otherwise specified.
+
+The interactive API documentation is available at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+### Authentication API
+
+Base path: `/api/auth`
+
+| Method | Endpoint    | Description                                              |
+| ------ | ----------- | -------------------------------------------------------- |
+| GET    | `/login`    | Initiates Blizzard OAuth authentication.                 |
+| GET    | `/callback` | Handles the OAuth callback and creates the user session. |
+| GET    | `/me`       | Retrieves the currently authenticated user.              |
+| POST   | `/logout`   | Ends the current user session.                           |
+| POST   | `/switch`   | Initiates a Battle.net account switch.                   |
+
+### Characters API
+
+Base path: `/api/characters`
+
+| Method | Endpoint                        | Description                                                       |
+| ------ | ------------------------------- | ----------------------------------------------------------------- |
+| GET    | `/available`                    | Retrieves characters available on the connected Blizzard account. |
+| POST   | `/import`                       | Imports selected characters into Warband HQ.                      |
+| GET    | `/`                             | Retrieves the user's imported characters.                         |
+| GET    | `/{character_id}`               | Retrieves detailed information about a character.                 |
+| PATCH  | `/{character_id}/favorite`      | Updates a character's favorite status.                            |
+| GET    | `/{character_id}/tags`          | Retrieves tags assigned to a character.                           |
+| POST   | `/{character_id}/tags/{tag_id}` | Assigns a tag to a character.                                     |
+| DELETE | `/{character_id}/tags/{tag_id}` | Removes a tag from a character.                                   |
+
+### Tags API
+
+Base path: `/api/tags`
+
+| Method | Endpoint    | Description                   |
+| ------ | ----------- | ----------------------------- |
+| GET    | `/`         | Retrieves the available tags. |
+| GET    | `/{tag_id}` | Retrieves a specific tag.     |
+| POST   | `/`         | Creates a new tag.            |
+| PATCH  | `/{tag_id}` | Updates an existing tag.      |
+| DELETE | `/{tag_id}` | Deletes a tag.                |
+
+**Permissions:** All authenticated users can retrieve tags. Creating, updating and deleting tags require administrator privileges.
+
+### Goals API
+
+Base path: `/api/goals`
+
+| Method | Endpoint     | Description                 |
+| ------ | ------------ | --------------------------- |
+| POST   | `/`          | Creates a new goal.         |
+| GET    | `/`          | Retrieves the user's goals. |
+| PATCH  | `/{goal_id}` | Updates an existing goal.   |
+| DELETE | `/{goal_id}` | Deletes a goal.             |
+
+Goals can be associated with a specific character or managed at Warband level.
+
+### Tasks API
+
+Tasks are managed through goal-related and task-specific endpoints.
+
+| Method | Endpoint                     | Description                                      |
+| ------ | ---------------------------- | ------------------------------------------------ |
+| POST   | `/api/goals/{goal_id}/tasks` | Creates a task for a goal.                       |
+| GET    | `/api/goals/{goal_id}/tasks` | Retrieves the tasks associated with a goal.      |
+| PATCH  | `/api/tasks/{task_id}`       | Updates a task, including its completion status. |
+| DELETE | `/api/tasks/{task_id}`       | Deletes a task.                                  |
+
+### Health Check
+
+Endpoint: `GET /health`
+
+Checks whether the backend is running and can successfully communicate with the database.
+
+**Successful response:**
+
+```json
+{
+  "status": "ok",
+  "database": "available"
+}
+```
+
+If the database is unavailable, the endpoint returns an HTTP `503` response.
 
 ## Database Schema Management
 
-Warband HQ uses MySQL and SQL scripts for schema setup. Alembic
-migrations are no longer part of the project.
+Warband HQ uses MySQL and SQL scripts to manage its database structure.
+Alembic migrations are not currently used.
 
-- `backend/database/setup.sql`: database setup SQL.
-- `backend/database/schema.sql`: application table definitions.
+### SQL Scripts
 
-Review SQL changes before applying them. For a new environment, create
-the required databases and apply the schema to both the development and
-test databases. Do not run integration tests against `warband_hq`.
+The `backend/database/` directory contains two SQL scripts:
+
+- `setup.sql`: creates the development and test databases
+  (`warband_hq` and `warband_hq_test`), creates a dedicated database
+  user, and grants the required permissions.
+- `schema.sql`: creates the application tables and their relationships.
+
+### Database Setup
+
+For a new environment:
+
+1. Review `setup.sql` and replace `CHANGE_ME` with a secure database
+   password before executing it.
+2. Execute `setup.sql` to create the databases and database user.
+3. Execute `schema.sql` against both `warband_hq` and
+   `warband_hq_test` to create the application tables.
+
+Review SQL changes before applying them to an existing database.
+
+**Important:** Never run integration tests against the development
+database (`warband_hq`). Always use `warband_hq_test`.
 
 ## Running Tests
 
 ### Backend Tests
 
-From the `backend` directory with the virtual environment activated, the
-integration tests require `DATABASE_URL` to be present in the process
-environment and to point to `warband_hq_test`. The tests check this
-database name and fail if a different database is selected.
+From the `backend` directory with the virtual environment activated,
+run the backend tests with pytest.
+
+The test configuration is loaded from `backend/.env.test` through
+`tests/conftest.py`. Make sure this file defines `DATABASE_URL` and
+points to the dedicated test database (`warband_hq_test`).
+
+Integration tests explicitly check the database name and fail if a
+different database is selected.
 
 For a local MAMP installation, set the test database URL for the test
-process. Replace the placeholder locally with your database password; do
-not share the real value:
+process. Replace the placeholder locally with your database password;
+do not share the real value:
 
 ```bash
 DATABASE_URL='mysql+pymysql://warband_hq_user:YOUR_DATABASE_PASSWORD@127.0.0.1:8889/warband_hq_test' python -m pytest -v
@@ -498,58 +610,102 @@ python -m pip install -r requirements.txt
 
 ### MySQL Connection Refused
 
-Check that: - MySQL is running. - The database exists and the schema has
-been applied. - The database account exists and has the required
-permissions. - The password is correct. - `DATABASE_URL` uses the
-correct host, port, and database name. - For MAMP, the configured MySQL
-port is commonly `8889`; confirm it in your local MAMP configuration.
+Check the following:
+
+- MySQL is running.
+- The database exists and the schema has been applied.
+- The database account exists and has the required permissions.
+- The database password is correct.
+- `DATABASE_URL` uses the correct host, port, and database name.
+- For MAMP, the MySQL port is commonly `8889`; confirm it in your
+  local MAMP configuration.
+
+If the connection is still refused, verify that the MySQL service is
+listening on the configured host and port.
 
 ### Integration Tests Fail Before Running
 
-The integration tests read `DATABASE_URL` from the process environment
-and require the database name `warband_hq_test`. A value in
-`backend/.env` loaded by Pydantic Settings is not automatically copied
-into `os.environ`. Set `DATABASE_URL` explicitly for the test command
-and ensure it targets the test database.
+The test configuration is loaded from `backend/.env.test` through
+`tests/conftest.py`. Make sure this file defines `DATABASE_URL` and
+points to the dedicated test database (`warband_hq_test`).
+
+The integration tests explicitly check the database name and fail if
+a different database is selected.
+
+If the configuration is missing or incorrect, verify the contents of
+`backend/.env.test` and ensure MySQL is running and accessible.
 
 ### Frontend Cannot Reach the Backend
 
-Confirm that the backend is running on port `8000` and the frontend on
-port `5173`. Check that the frontend API configuration points to:
+Check the following:
+
+- The FastAPI backend is running on port `8000`.
+- The Vite frontend is running on port `5173`.
+- The frontend API configuration points to the correct backend URL:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-The backend CORS configuration must allow the frontend origin:
+- The backend CORS configuration allows the frontend origin:
 
 ```text
 http://127.0.0.1:5173
 ```
 
-Use the same hostname consistently. Browsers may treat `localhost` and
-`127.0.0.1` as different origins.
+Use the same hostname consistently for both services. Browsers may
+treat `localhost` and `127.0.0.1` as different origins.
+
+If the connection still fails, check the browser console and backend
+logs for network or CORS errors.
 
 ### Blizzard OAuth Fails
 
-Verify that: - The client ID and client secret are correct. - The
-configured region is correct. - The redirect URI exactly matches the
-Blizzard Developer Portal configuration. - The callback endpoint is
-available. - Backend logs do not report OAuth or session configuration
-errors.
+Check the following:
 
-Never include the client secret in frontend code or public logs.
+- The Blizzard client ID and client secret are correct in
+  `backend/.env`.
+- `BLIZZARD_REGION` is set to the intended Blizzard API region.
+- `BLIZZARD_REDIRECT_URI` exactly matches the redirect URI configured
+  in the Blizzard Developer Portal.
+- The callback endpoint is available at
+  `/api/auth/callback`.
+- The backend is running and does not report OAuth or session
+  configuration errors.
+
+If authentication still fails, inspect the backend logs and verify
+the OAuth configuration before trying again.
+
+Never include the client secret in frontend code, screenshots, or
+public logs.
 
 ### Session Is Not Preserved
 
-Check that frontend API requests include credentials where required and
-that backend session and CORS settings match the configured frontend
-origin. For local development, use the project's existing cookie
-settings rather than changing production security options unnecessarily.
+Check the following:
+
+- Frontend API requests include credentials where required.
+- Backend session settings are correctly configured.
+- CORS allows the frontend origin and supports credentials.
+- The frontend and backend use the same hostname consistently.
+
+For local development, verify the existing cookie settings before
+changing them. Avoid weakening production security settings to solve
+local session issues.
+
+If the session is still not preserved, inspect the browser's
+developer tools to check whether session cookies are being stored
+and sent with API requests.
 
 ### Node.js Dependencies or Build Failures
 
-From `frontend`, run:
+From the `frontend` directory, check the Node.js and npm versions:
+
+```bash
+node --version
+npm --version
+```
+
+Install the project dependencies and run the frontend checks:
 
 ```bash
 npm install
@@ -557,22 +713,30 @@ npm run lint
 npm run build
 ```
 
-If installation fails, inspect the Node.js version and error output
-before deleting lockfiles or reinstalling packages.
+If installation or build fails:
+
+- Check that the installed Node.js version is compatible with the
+  project dependencies.
+- Read the npm error output to identify the cause.
+- Check for dependency or configuration issues before making changes.
+- Avoid deleting package-lock.json or reinstalling packages
+  unnecessarily.
 
 ## Security Notes
 
-- Never commit `.env` files containing real credentials.
+- Never commit `.env` files or other files containing real credentials.
 - Never expose Blizzard client secrets in frontend code.
-- Use a strong session secret.
+- Use a strong, randomly generated session secret.
 - Use a dedicated MySQL account with limited permissions for the
   application.
 - Do not expose a database service directly to the public internet.
 - Restrict CORS to the origins required by the application.
 - Use HTTPS and secure cookie settings when deploying outside local
   development.
-- Do not publish logs containing tokens, session identifiers,
+- Never publish logs containing tokens, session identifiers,
   passwords, or other secrets.
+- Keep real credentials out of source code, screenshots, and
+  documentation.
 
 ## Project Status
 
@@ -588,6 +752,8 @@ stories.
 - **US-07 --- Character Filtering and Sorting:** search, filtering, and sorting.
 - **US-08 --- Character Favorites:** persistent favorite management and favorites-only filtering.
 - **US-09 --- Global Character Tag Management:** global tag catalogue, administrator-only catalogue management, and character tag assignment.
+- **US-10 --- Personal Goals:** creation and management of personal goals associated with the Warband or individual characters.
+- **US-11 --- Tasks:** task creation, management, completion tracking, and association with personal goals.
 - **US-20 --- Character Tag Management & Performance:** assigned tags displayed in My Warband and managed from the character details page.
 - **US-21 --- Switch Battle.net Account:** confirmation modal, separate-tab Battle.net logout, same-account detection, and session replacement after successful OAuth. Users return manually to Warband HQ and select "Log in with Battle.net" to complete the switch.
 

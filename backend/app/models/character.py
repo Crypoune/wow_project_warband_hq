@@ -61,4 +61,10 @@ class Character(Base):
         passive_deletes=True,
     )
 
+    note: Mapped["CharacterNote | None"] = relationship(
+        back_populates="character",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
     user: Mapped["User"] = relationship(back_populates="characters")

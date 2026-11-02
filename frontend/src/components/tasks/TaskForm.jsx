@@ -12,20 +12,9 @@ function TaskForm({ task = null, onSubmit, onCancel, isSubmitting = false }) {
   const isEditing = Boolean(task);
 
   // États locaux correspondant aux champs du formulaire.
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState(task?.title ?? "");
+  const [description, setDescription] = useState(task?.description ?? "");
   const [validationError, setValidationError] = useState("");
-
-  /**
-   * Initialise les champs du formulaire.
-   * En création, les champs sont vides.
-   * En modification, on reprend les valeurs de la tâche.
-   */
-  useEffect(() => {
-    setTitle(task?.title ?? "");
-    setDescription(task?.description ?? "");
-    setValidationError("");
-  }, [task]);
 
   // Permet de fermer la popup avec la touche Échap.
   useEffect(() => {

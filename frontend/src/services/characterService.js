@@ -100,6 +100,64 @@ export async function getCharacterDetails(characterId) {
 }
 
 /**
+ * Récupère la note personnelle d'un personnage.
+ *
+ * @param {number} characterId - Identifiant interne du personnage.
+ * @returns {Promise<string|null>} Le contenu de la note ou null.
+ */
+export async function getCharacterNote(characterId) {
+  const response = await fetch(
+    `${API_URL}/api/characters/${characterId}/note`,
+    {
+      credentials: "include",
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ||
+        data.detail?.message ||
+        "Unable to retrieve character note.",
+    );
+  }
+
+  return data.note;
+}
+
+/**
+ * Crée ou met à jour la note personnelle d'un personnage.
+ *
+ * @param {number} characterId - Identifiant interne du personnage.
+ * @param {string} content - Contenu de la note.
+ * @returns {Promise<string|null>} Le contenu sauvegardé.
+ */
+export async function saveCharacterNote(characterId, content) {
+  const response = await fetch(
+    `${API_URL}/api/characters/${characterId}/note`,
+    {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content }),
+    },
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || data.detail?.message || "Unable to save character note.",
+    );
+  }
+
+  return data.note;
+}
+
+/**
  * Met à jour le statut favori d'un personnage importé.
  *
  * @param {number} characterId - Identifiant interne du personnage.
