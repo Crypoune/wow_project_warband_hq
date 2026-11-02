@@ -31,6 +31,9 @@ from app.api.goals import router as goals_router
 # Importe le routeur qui gère les tâches.
 from app.api.tasks import router as tasks_router
 
+# Importe le routeur qui gère les notes.
+from app.api.notes import router as notes_router
+
 # Importe les fonctions personnalisées qui formateront les différentes réponses d'erreur.
 from app.core.exceptions import (
     http_exception_handler,
@@ -109,3 +112,6 @@ app.include_router(goals_router)
 
 # Enregistre les routes relatives aux tâches.
 app.include_router(tasks_router)
+
+# Enregistre les routes relatives aux notes.
+app.include_router(notes_router)

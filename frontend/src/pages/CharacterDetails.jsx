@@ -9,6 +9,7 @@ import {
   assignCharacterTag,
   removeCharacterTag,
 } from "../services/characterService.js";
+import CharacterNote from "../components/notes/CharacterNote.jsx";
 import {
   getGoals,
   createGoal,
@@ -665,6 +666,7 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
         </div>
 
         <aside className="character-details-sidebar">
+          <CharacterNote characterId={characterId} />
           {/* OBJECTIFS DU PERSONNAGE ET DE LA WARBAND */}
           <section className="character-goals-panel">
             <div className="character-goals-header">
@@ -674,6 +676,18 @@ function CharacterDetails({ characterId, onBack, onUpdateTags }) {
                 Warband.
               </p>
             </div>
+
+            {goalError && (
+              <p className="character-goals-error" role="alert">
+                {goalError}
+              </p>
+            )}
+
+            {goalSuccess && (
+              <p className="character-goals-success" role="status">
+                {goalSuccess}
+              </p>
+            )}
 
             {/* Objectifs associés au personnage */}
             <div className="character-goals-group">

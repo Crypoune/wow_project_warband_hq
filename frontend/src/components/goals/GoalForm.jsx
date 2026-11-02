@@ -28,25 +28,12 @@ function GoalForm({
   const isEditing = Boolean(goal);
 
   // États locaux correspondant aux champs du formulaire.
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("IN_PROGRESS");
+  const [title, setTitle] = useState(goal?.title ?? "");
+  const [description, setDescription] = useState(goal?.description ?? "");
+  const [status, setStatus] = useState(goal?.status ?? "IN_PROGRESS");
 
   // Permet d'afficher un message si le titre est invalide.
   const [validationError, setValidationError] = useState("");
-
-  /**
-   * Initialise les champs du formulaire.
-   *
-   * En création, les champs sont vides.
-   * En modification, on reprend les valeurs de l'objectif existant.
-   */
-  useEffect(() => {
-    setTitle(goal?.title ?? "");
-    setDescription(goal?.description ?? "");
-    setStatus(goal?.status ?? "IN_PROGRESS");
-    setValidationError("");
-  }, [goal]);
 
   // Permet de fermer la popup avec la touche Échap.
   useEffect(() => {
