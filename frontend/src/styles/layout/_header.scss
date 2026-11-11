@@ -36,18 +36,11 @@
   text-decoration: none;
 
   .brand-icon {
-    display: grid;
-    place-items: center;
-
+    display: block;
     width: 42px;
     height: 42px;
-
-    color: #f2c66d;
-    font-size: 28px;
-
-    background: rgba(215, 170, 80, 0.08);
-    border: 1px solid rgba(215, 170, 80, 0.3);
-    border-radius: 12px;
+    flex-shrink: 0;
+    object-fit: contain;
   }
 
   strong {
@@ -200,7 +193,6 @@
     .brand-icon {
       width: 36px;
       height: 36px;
-      font-size: 24px;
     }
 
     strong {
