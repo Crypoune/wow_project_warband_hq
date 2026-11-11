@@ -1,7 +1,7 @@
 @use "../abstracts/variables" as vars;
 
 // ========================================
-// SELECTION TOOLBAR*
+// SELECTION TOOLBAR
 // ========================================
 
 .selection-toolbar,
@@ -32,7 +32,7 @@
 }
 
 // ========================================
-// COLLECTION COUNTER*
+// COLLECTION COUNTER
 // ========================================
 
 .collection-count {
@@ -61,7 +61,7 @@
 }
 
 // ========================================
-// VIEW TOGGLE*
+// VIEW TOGGLE
 // ========================================
 
 .view-toggle {
@@ -108,7 +108,7 @@
 }
 
 // ========================================
-// CHARACTER CARDS*
+// CHARACTER CARDS
 // ========================================
 
 .character-card {
@@ -268,7 +268,7 @@
 }
 
 // ========================================
-// FILTER TOOLBAR*
+// FILTER TOOLBAR
 // ========================================
 
 .filter-toolbar {
@@ -343,7 +343,7 @@
 }
 
 // ========================================
-// CHARACTER FILTER PANEL*
+// CHARACTER FILTER PANEL
 // ========================================
 
 .character-filters {
@@ -457,7 +457,7 @@
 }
 
 // ========================================
-// COMPACT CHARACTER LIST*
+// COMPACT CHARACTER LIST
 // ========================================
 
 .character-list {
@@ -479,13 +479,52 @@
   }
 }
 
+// Ligne principale du personnage.
 .character-row-content {
   display: grid;
-  grid-template-columns: 100px minmax(0, 1fr) 44px minmax(120px, 160px);
+  grid-template-columns:
+    40px
+    44px
+    100px
+    minmax(150px, auto)
+    minmax(180px, 1fr)
+    minmax(120px, 160px);
   align-items: center;
   gap: 12px;
   min-height: 54px;
   padding: 8px 12px;
+
+  .favorite-button {
+    grid-column: 1;
+  }
+
+  .character-row-level {
+    grid-column: 2;
+  }
+
+  .character-row-icons {
+    grid-column: 3;
+  }
+
+  .character-item-level {
+    grid-column: 4;
+    margin-top: 0;
+    flex-wrap: nowrap;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .character-item-level-tooltip {
+    display: none;
+  }
+
+  .character-row-name {
+    grid-column: 5;
+  }
+
+  .character-row-realm {
+    grid-column: 6;
+  }
 }
 
 .character-row-icons {
@@ -541,7 +580,7 @@
 }
 
 // ========================================
-// CHARACTER FAVORITES*
+// CHARACTER FAVORITES
 // ========================================
 
 .favorite-button {
@@ -608,37 +647,8 @@
   }
 }
 
-.character-row-content {
-  grid-template-columns: 44px 100px minmax(0, 1fr) 44px minmax(120px, 160px);
-
-  .favorite-button {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .character-row-icons {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .character-row-name {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  .character-row-level {
-    grid-column: 4;
-    grid-row: 1;
-  }
-
-  .character-row-realm {
-    grid-column: 5;
-    grid-row: 1;
-  }
-}
-
 // ========================================
-// RESPONSIVE*
+// RESPONSIVE
 // ========================================
 
 @media (max-width: 700px) {
@@ -734,7 +744,7 @@
 }
 
 // ========================================
-// CHARACTER TAGS*
+// CHARACTER TAGS
 // ========================================
 
 .tag-creation {
@@ -825,8 +835,8 @@
   align-items: stretch;
   gap: 8px;
   min-width: 0;
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 0;
+  padding: 12px 14px;
   border-top: 1px solid #ffffff12;
   color: #aab4c6;
   font-size: 12px;

@@ -1,12 +1,17 @@
+import warbandLogo from "../../assets/branding/warband-hq-logo.webp";
+
 // Affiche le header commun, que l'utilisateur soit connecté ou non.
 function AppHeader({ user, onLogout, onLogin, onSwitchAccount, onMenuToggle }) {
   return (
     <header className="app-header">
       {/* Logo et identité visuelle de Warband HQ. */}
       <a className="app-brand" href="/" aria-label="Accueil Warband HQ">
-        <span className="brand-icon" aria-hidden="true">
-          ✦
-        </span>
+        <img
+          className="brand-icon"
+          src={warbandLogo}
+          alt=""
+          aria-hidden="true"
+        />
 
         <span>
           <strong>

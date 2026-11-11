@@ -514,6 +514,14 @@ function MyWarband({
                       onToggleFavorite={onToggleFavorite}
                     />
 
+                    {/* Niveau du personnage. */}
+                    <span
+                      className="character-row-level"
+                      title="Niveau du personnage"
+                    >
+                      {character.level ?? "-"}
+                    </span>
+
                     {/* Regroupe les icônes de faction, de race et de classe. */}
                     <div className="character-row-icons">
                       {/* Affiche l'icône de faction uniquement si elle existe.
@@ -562,23 +570,14 @@ function MyWarband({
                       )}
                     </div>
 
+                    {/* Réutilise le composant qui affiche les deux niveaux d'objet. */}
+                    <CharacterItemLevel character={character} />
+
                     {/* Affiche le nom du personnage dans la ligne. */}
                     <h3 className="character-name character-row-name">
                       {/* Utilise un texte de remplacement si le nom est absent. */}
                       {character.name || "Unknown character"}
                     </h3>
-
-                    {/* Affiche le niveau du personnage, avec "-" si la valeur est absente.
-                        Ce niveau est différent du niveau d'objet de son équipement. */}
-                    <span
-                      className="character-row-level"
-                      title="Niveau du personnage"
-                    >
-                      {character.level ?? "-"}
-                    </span>
-
-                    {/* Réutilise le composant qui affiche les deux niveaux d'objet. */}
-                    <CharacterItemLevel character={character} />
 
                     {/* Affiche le royaume du personnage, avec une valeur de remplacement si nécessaire. */}
                     <span className="character-row-realm">
